@@ -37,7 +37,22 @@ setup(
     keywords='robotframework openshift cli',
     platforms='any',
     install_requires=[
-        'robotframework',
+        "reportportal-client",
+        "robotframework",
+        "robotframework-debuglibrary",
+        "ipython",
+        "openshift",
+        "precommit",
+        "pytest",
+        "pytest-logger",
+        "pyyaml",
+        "pygments",
+        "requests",
+        "Jinja2",
+        "flake8",
+        "mypy",
+        "tox",
+        "kubernetes"
     ],
     packages=['OpenShiftCLI'],
 )
