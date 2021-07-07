@@ -1,8 +1,17 @@
-from OpenShiftCLI import OpenShiftCLI
+from OpenShiftCLI import PodKeywords
 
 
 def test_get_pods():
-    oc = OpenShiftCLI()
-    actual = oc.get_pods()
-    expected = None
+    oc = PodKeywords()
+    actual = len(oc.get_pods("redhat-ods-applications"))
+    expected = 8
+
+    assert actual == expected
+
+
+def test_pods_should_contain():
+    oc = PodKeywords()
+    actual = len(oc.pods_should_contain("jupyterhub-db", "redhat-ods-applications"))
+    expected = 3
+    print(oc.pods_should_contain("jupyterhub-db", "redhat-ods-applications"))
     assert actual == expected

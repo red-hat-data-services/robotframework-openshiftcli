@@ -27,7 +27,7 @@ Openshift Cluster and perform various operations.
 
 setup(
     name='robotframework-OpenShiftCLI',
-    version='v0.1',
+    version='0.1',
     description="Robotframework for OpenShift interactions via CLI",
     long_description=DESCRIPTION,
     author='Vasu Kulkarni',
