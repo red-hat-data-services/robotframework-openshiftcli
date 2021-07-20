@@ -1,9 +1,11 @@
 reportportal-client
-robotframework
+robotframework>=4
 robotframework-debuglibrary
+robotframework-seleniumlibrary
+robotframework-jupyterlibrary>=0.3.1
 ipython
 openshift
-precommit
+pre-commit
 pytest
 pytest-logger
 pyyaml
@@ -12,5 +14,4 @@ requests
 Jinja2
 flake8
 mypy
-tox
 kubernetes

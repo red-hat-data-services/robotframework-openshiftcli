@@ -24,3 +24,4 @@ bugzilla.cfg
 robotframework_OpenShiftCLI.egg-info/
 .tox/
 robotframework/output/*
+installation/*
