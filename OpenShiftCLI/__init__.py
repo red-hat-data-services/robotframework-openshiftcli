@@ -7,6 +7,7 @@ from OpenShiftCLI.keywords import (
     SecretKeywords,
     ServiceKeywords,
 )
+from .apiclient import Apiclient
 import urllib3
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -23,5 +24,9 @@ class OpenShiftCLI(DynamicCore):
     ROBOT_LIBRARY_VERSION = VERSION
 
     def __init__(self) -> None:
-        libraries = [ListKeywords(), PodKeywords(), ProjectKeywords(), SecretKeywords(), ServiceKeywords()]
+        libraries = [ListKeywords(),
+                     PodKeywords(),
+                     ProjectKeywords(Apiclient('project.openshift.io/v1', 'Project')),
+                     SecretKeywords(),
+                     ServiceKeywords()]
         DynamicCore.__init__(self, libraries)

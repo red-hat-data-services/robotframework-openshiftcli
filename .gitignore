@@ -25,3 +25,4 @@ robotframework_OpenShiftCLI.egg-info/
 .tox/
 robotframework/output/*
 installation/*
+robotframework/installation.robot

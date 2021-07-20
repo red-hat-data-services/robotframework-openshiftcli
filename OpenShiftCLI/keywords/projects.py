@@ -1,5 +1,3 @@
-from kubernetes import config
-from openshift.dynamic import DynamicClient
 from robotlibcore import keyword
 from robot.api import logger, Error
 from typing import List, Dict, Union
@@ -8,10 +6,8 @@ import os
 
 
 class ProjectKeywords(object):
-    def __init__(self) -> None:
-        self.k8s_client = config.new_client_from_config()
-        self.dyn_client = DynamicClient(self.k8s_client)
-        self.projects = self.dyn_client.resources.get(api_version='project.openshift.io/v1', kind='Project')
+    def __init__(self, cliclient) -> None:
+        self.cliclient = cliclient
 
     @keyword
     def get_projects(self) -> List[str]:
@@ -24,7 +20,7 @@ class ProjectKeywords(object):
         Returns:
           output(List): Values of project names in a List
         """
-        project_list = self.projects.get()
+        project_list = self.cliclient.get()
         projects = [project.metadata.name for project in project_list.items]
         logger.info(projects)
         return projects
@@ -40,7 +36,7 @@ class ProjectKeywords(object):
         Returns:
           output(Dictionary): Values of project names and status in a List
         """
-        project_list = self.projects.get(name=projectname)
+        project_list = self.cliclient.get(name=projectname)
         project_found = {project_list.metadata.name: project_list.status.phase}
         if not project_found:
             logger.error(f'Pod {projectname} not found')
@@ -67,7 +63,7 @@ class ProjectKeywords(object):
           - kubernetes
       """
         project_data = yaml.load(project, yaml.SafeLoader)
-        new_project = self.projects.create(body=project_data)
+        new_project = self.cliclient.create(body=project_data)
         print(new_project)
 
     @keyword
@@ -77,7 +73,7 @@ class ProjectKeywords(object):
         Args:
             projectname (str): Project to be deleted
         """
-        del_project = self.projects.delete(projectname)
+        del_project = self.cliclient.delete(projectname)
         print(del_project)
 
     @keyword
@@ -90,7 +86,7 @@ class ProjectKeywords(object):
         cwd = os.getcwd()
         with open(rf'{cwd}/{projectname}') as file:
             project = yaml.load(file, yaml.SafeLoader)
-        apply_project = self.projects.apply(body=project)
+        apply_project = self.cliclient.apply(body=project)
         print(apply_project)
 
     @keyword
@@ -101,7 +97,7 @@ class ProjectKeywords(object):
             projectname (Union[str, None], optional): Project to wait. Defaults to None.
             timeout (Union[int, None], optional): Time to wait. Defaults to 100.
         """
-        projects = self.dyn_client.resources.get(api_version='v1', kind='Namespace')
+        projects = self.cliclient.dyn_client.resources.get(api_version='v1', kind='Namespace')
         project = projects.watch(namespace='', timeout=timeout)
 
         for event in project:
