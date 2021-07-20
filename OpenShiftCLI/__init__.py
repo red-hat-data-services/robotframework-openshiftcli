@@ -1,12 +1,16 @@
 from .version import VERSION
 from robotlibcore import DynamicCore
 from OpenShiftCLI.keywords import (
+    ListKeywords,
     PodKeywords,
     ProjectKeywords,
+    SecretKeywords,
     ServiceKeywords,
 )
+import urllib3
 
-_version_ = VERSION
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+__version__ = VERSION
 
 
 class OpenShiftCLI(DynamicCore):
@@ -19,5 +23,5 @@ class OpenShiftCLI(DynamicCore):
     ROBOT_LIBRARY_VERSION = VERSION
 
     def __init__(self) -> None:
-        libraries = [PodKeywords(), ProjectKeywords(), ServiceKeywords()]
+        libraries = [ListKeywords(), PodKeywords(), ProjectKeywords(), SecretKeywords(), ServiceKeywords()]
         DynamicCore.__init__(self, libraries)

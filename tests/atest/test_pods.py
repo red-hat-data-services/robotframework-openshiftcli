@@ -4,7 +4,7 @@ from OpenShiftCLI import PodKeywords
 def test_get_pods():
     oc = PodKeywords()
     actual = len(oc.get_pods("redhat-ods-applications"))
-    expected = 8
+    expected = 9
 
     assert actual == expected
 
