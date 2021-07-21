@@ -1,19 +1,15 @@
-from kubernetes import config
-from openshift.dynamic import DynamicClient
 from robotlibcore import keyword
 from robot.api import logger, Error
-from typing import List, Dict
+from typing import List, Dict, Union
 import time
 
 
 class PodKeywords(object):
-    def __init__(self) -> None:
-        self.k8s_client = config.new_client_from_config()
-        self.dyn_client = DynamicClient(self.k8s_client)
-        self.v1_pods = self.dyn_client.resources.get(api_version='v1', kind='Pod')
+    def __init__(self, cliclient) -> None:
+        self.cliclient = cliclient
 
     @keyword
-    def get_pods(self, namespace: str = '') -> List[Dict[str, str]]:
+    def get_pods(self, namespace: Union[str, None] = None) -> List[Dict[str, str]]:
         """
         Get the Pods specified in the namespace
         default is all namespace
@@ -24,7 +20,7 @@ class PodKeywords(object):
           output(List): Values of project names in a List
 
         """
-        pod_list = self.v1_pods.get(namespace=namespace).items
+        pod_list = self.cliclient.get(name=None, namespace=namespace).items
         if not pod_list:
             logger.error(f'Pods not found in {namespace}')
             raise Error(f'Pods not found in {namespace}')
@@ -33,30 +29,30 @@ class PodKeywords(object):
         return pods
 
     @keyword
-    def pods_should_contain(self, podname: str, namespace: str = "") -> List[Dict[str, str]]:
+    def pods_should_contain(self, name: str, namespace: Union[str, None] = None) -> List[Dict[str, str]]:
         """
-        Get pods starting with name podname
+        Get pods starting with name name
 
         Args:
-          podname: starting name of the pod eg: jupyterhub-db
+          name: starting name of the pod eg: jupyterhub-db
           namespace: namespace
 
         Returns:
           output(List): Values of pod names and status with List
         """
-        pod_list = self.v1_pods.get(namespace=namespace)
+        pod_list = self.cliclient.get(name=None, namespace=namespace)
         pod_found = [{"name": pod.metadata.name, "status": pod.status.phase}
-                     for pod in pod_list.items if (pod.metadata.name).startswith(podname)]
+                     for pod in pod_list.items if (pod.metadata.name).startswith(name)]
         logger.info(pod_found)
         if not pod_found:
-            logger.error(f'Pod {podname} not found in namespace {namespace}')
+            logger.error(f'Pod {name} not found in namespace {namespace}')
             raise Error(
-                f'Pod {podname} not found in namespace {namespace}'
+                f'Pod {name} not found in namespace {namespace}'
             )
         return pod_found
 
     @keyword
-    def wait_until_pods_available(self, namespace: str = '', timeout: int = 900) -> None:
+    def wait_until_pods_available(self, namespace: Union[str, None] = None, timeout: int = 900) -> None:
         """
         Wait until pods are available
 
@@ -69,7 +65,7 @@ class PodKeywords(object):
         """
         timer = time.time() + timeout
         while True:
-            pods = self.v1_pods.get(namespace=namespace).items
+            pods = self.cliclient.get(name=None, namespace=namespace).items
 
             if all(pod.status.phase != "Pending" for pod in pods) and pods != []:
                 if any(pod.status.phase != "Succeeded" and pod.status.phase != "Running" for pod in pods):

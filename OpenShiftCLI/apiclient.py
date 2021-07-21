@@ -10,14 +10,14 @@ class Apiclient(Cliclient):
         self.dyn_client = DynamicClient(self.k8s_client)
         self.objects = self.dyn_client.resources.get(api_version=api_version, kind=kind)
 
-    def apply(self, body):
-        return self.objects.apply(body=body)
+    def apply(self, body, namespace):
+        return self.objects.apply(body=body, namespace=namespace)
 
-    def create(self, body):
-        return self.objects.create(body=body)
+    def create(self, body, namespace):
+        return self.objects.create(body=body, namespace=namespace)
 
-    def delete(self, body):
-        return self.objects.delete(body)
+    def delete(self, name, namespace):
+        return self.objects.delete(name=name, namespace=namespace)
 
-    def get(self, name=None, namespace=None):
+    def get(self, name, namespace):
         return self.objects.get(name=name, namespace=namespace)

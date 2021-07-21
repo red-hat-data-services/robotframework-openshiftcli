@@ -4,15 +4,15 @@ from abc import ABC, abstractmethod
 class Cliclient(ABC):
 
     @abstractmethod
-    def apply(self, body):
+    def apply(self, body, namespace):
         pass
 
     @abstractmethod
-    def create(self, body):
+    def create(self, body, namespace):
         pass
 
     @abstractmethod
-    def delete(self, body):
+    def delete(self, name, namespace):
         pass
 
     @abstractmethod

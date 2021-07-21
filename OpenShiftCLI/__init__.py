@@ -24,9 +24,9 @@ class OpenShiftCLI(DynamicCore):
     ROBOT_LIBRARY_VERSION = VERSION
 
     def __init__(self) -> None:
-        libraries = [ListKeywords(),
-                     PodKeywords(),
+        libraries = [ListKeywords(Apiclient('v1', 'List')),
+                     PodKeywords(Apiclient('v1', 'Pod')),
                      ProjectKeywords(Apiclient('project.openshift.io/v1', 'Project')),
-                     SecretKeywords(),
-                     ServiceKeywords()]
+                     SecretKeywords(Apiclient('v1', 'Secret')),
+                     ServiceKeywords(Apiclient('v1', 'Service'))]
         DynamicCore.__init__(self, libraries)

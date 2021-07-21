@@ -1,5 +1,3 @@
-from kubernetes import config
-from openshift.dynamic import DynamicClient
 from robotlibcore import keyword
 from robot.api import logger
 from typing import Union
@@ -8,10 +6,8 @@ import os
 
 
 class SecretKeywords(object):
-    def __init__(self) -> None:
-        self.k8s_client = config.new_client_from_config()
-        self.dyn_client = DynamicClient(self.k8s_client)
-        self.secrets = self.dyn_client.resources.get(api_version='v1', kind='Secret')
+    def __init__(self, cliclient) -> None:
+        self.cliclient = cliclient
 
     @keyword
     def create_secret(self, filename: str, namespace: Union[str, None] = None) -> None:
@@ -25,7 +21,7 @@ class SecretKeywords(object):
         with open(rf'{cwd}/{filename}') as file:
             secret_data = yaml.load(file, yaml.SafeLoader)
             logger.info(secret_data)
-            secret = self.secrets.create(body=secret_data, namespace=namespace)
+            secret = self.cliclient.create(body=secret_data, namespace=namespace)
             logger.info(secret)
 
     @keyword
@@ -39,11 +35,11 @@ class SecretKeywords(object):
         cwd = os.getcwd()
         with open(rf'{cwd}/{filename}') as file:
             secret_data = yaml.load(file, yaml.SafeLoader)
-        secret = self.secrets.apply(body=secret_data, namespace=namespace)
+        secret = self.cliclient.apply(body=secret_data, namespace=namespace)
         logger.info(secret)
 
     @keyword
-    def delete_secret(self, filename: str) -> None:
+    def delete_secret(self, filename: str, namespace: Union[str, None] = None) -> None:
         """Delete secret
 
         Args:
@@ -52,5 +48,5 @@ class SecretKeywords(object):
         cwd = os.getcwd()
         with open(rf'{cwd}/{filename}') as file:
             secret_data = yaml.load(file, yaml.SafeLoader)
-        del_secret = self.secrets.delete(secret_data)
+        del_secret = self.cliclient.delete(secret_data, namespace=namespace)
         logger.info(del_secret)
