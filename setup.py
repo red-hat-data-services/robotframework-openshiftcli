@@ -14,11 +14,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import sys
-from os.path import join, dirname
 from setuptools import setup, find_packages
 
-sys.path.append(join(dirname(__file__), 'OpenShiftCLI'))
 
 DESCRIPTION = """
 This test library provides  keywords to interact with
@@ -27,7 +24,7 @@ Openshift Cluster and perform various operations.
 
 setup(
     name='robotframework-OpenShiftCLI',
-    version='v0.1',
+    version='0.1',
     description="Robotframework for OpenShift interactions via CLI",
     long_description=DESCRIPTION,
     author='Vasu Kulkarni',
@@ -37,7 +34,25 @@ setup(
     keywords='robotframework openshift cli',
     platforms='any',
     install_requires=[
-        'robotframework',
+        "reportportal-client",
+        "robotframework>=4",
+        "robotframework-debuglibrary",
+        "robotframework-seleniumlibrary",
+        "robotframework-jupyterlibrary>=0.3.1",
+        "ipython",
+        "openshift",
+        "pre-commit",
+        "pytest",
+        "pytest-logger",
+        "pyyaml",
+        "pygments",
+        "requests",
+        "Jinja2",
+        "flake8",
+        "mypy",
+        "kubernetes"
     ],
-    packages=['OpenShiftCLI'],
+    zip_safe=True,
+    include_package_data=True,
+    packages=find_packages(exclude=["tests"]),
 )
