@@ -1,37 +1,43 @@
 from robotlibcore import keyword
-from robot.api import logger, Error
+from robot.api import Error
 from typing import List, Dict, Union
 import time
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
 
 
 class PodKeywords(object):
-    def __init__(self, cliclient) -> None:
+    def __init__(self, cliclient, output_formatter, output_streamer) -> None:
         self.cliclient = cliclient
+        self.output_formatter = output_formatter
+        self.output_streamer = output_streamer
 
     @keyword
-    def get_pods(self, namespace: Union[str, None] = None) -> List[Dict[str, str]]:
-        """
-        Get the Pods specified in the namespace
-        default is all namespace
+    def get_pods(self, namespace: Union[str, None] = None, label_selector: Union[str, None] = None) -> List:
+        """Get Pods
+
         Args:
-          Namespace: str
+            namespace (Union[str, None], optional): Namespace to list pods from. Defaults to None.
+
+        Raises:
+            Error: Raises error if not pods found
 
         Returns:
-          output(List): Values of project names in a List
-
+            List: List of pods
         """
-        pod_list = self.cliclient.get(name=None, namespace=namespace).items
-        if not pod_list:
-            logger.error(f'Pods not found in {namespace}')
+
+        result = self.cliclient.get(name=None, namespace=namespace, label_selector=label_selector).items
+        if not result:
+            self.output_streamer.stream(f'Pods not found in {namespace}', "error")
             raise Error(f'Pods not found in {namespace}')
-        pods = [{"name": pod.metadata.name, "status": pod.status.phase} for pod in pod_list]
-        logger.info(pods)
-        return pods
+        return result
 
     @keyword
     def pods_should_contain(self, name: str, namespace: Union[str, None] = None) -> List[Dict[str, str]]:
         """
-        Get pods starting with name name
+        Get pods starting with name
 
         Args:
           name: starting name of the pod eg: jupyterhub-db
@@ -40,67 +46,81 @@ class PodKeywords(object):
         Returns:
           output(List): Values of pod names and status with List
         """
-        pod_list = self.cliclient.get(name=None, namespace=namespace)
+        pod_list = self.cliclient.get(name=None, namespace=namespace, label_selector=None)
         pod_found = [{"name": pod.metadata.name, "status": pod.status.phase}
                      for pod in pod_list.items if (pod.metadata.name).startswith(name)]
-        logger.info(pod_found)
+        self.output_streamer(pod_found, "info")
         if not pod_found:
-            logger.error(f'Pod {name} not found in namespace {namespace}')
+            self.output_streamer(f'Pod {name} not found in namespace {namespace}', "error")
             raise Error(
                 f'Pod {name} not found in namespace {namespace}'
             )
         return pod_found
 
     @keyword
-    def wait_until_pods_available(self, namespace: Union[str, None] = None, timeout: int = 900) -> None:
-        """
-        Wait until pods are available
+    def wait_for_pods_number(self, number: int,
+                             namespace: Union[str, None] = None,
+                             label_selector: Union[str, None] = None,
+                             timeout: int = 60,
+                             comparison: Literal["EQUAL", "GREATER THAN", "LESS THAN"] = "EQUAL") -> None:
+        """Wait for a given number of pods to exist
 
         Args:
-          namespace: namespace
-          timeout: timeout
-
-        Returns:
-          output: None
+            number (int): Number of pods to wait for
+            namespace (Union[str, None], optional): Namespace where the pods exist. Defaults to None.
+            label_selector (Union[str, None], optional): Label selector of the pods. Defaults to None.
+            timeout (Union[int, None], optional): Time to wait for the pods. Defaults to 60.
+            comparison (Literal[, optional): Comparison between expected and actual number of pods. Defaults to "EQUAL".
         """
-        timer = time.time() + timeout
-        while True:
-            pods = self.cliclient.get(name=None, namespace=namespace).items
+        max_time = time.time() + timeout
+        while time.time() < max_time:
+            pods_number = len(self.get_pods(namespace=namespace, label_selector=label_selector))
+            if pods_number == number and comparison == "EQUAL":
+                self.output_streamer.stream(f"Pods number: {number} succeeded", "info")
+                break
+            elif pods_number > number and comparison == "GREATER THAN":
+                self.output_streamer.stream(f"Pods number greater than: {number} succeeded", "info")
+                break
+            elif pods_number < number and comparison == "LESS THAN":
+                self.output_streamer.stream(f"Pods number less than: {number} succeeded", "info")
+                break
+        else:
+            pods_number = len(self.get_pods(namespace=namespace, label_selector=label_selector))
+            self.output_streamer.stream(f"Timeout - {pods_number} found pods:", "warn")
 
-            if all(pod.status.phase != "Pending" for pod in pods) and pods != []:
-                if any(pod.status.phase != "Succeeded" and pod.status.phase != "Running" for pod in pods):
-                    for pod in pods:
-                        if pod.status.phase == "Failed":
-                            logger.error(
-                                f"""Error in pod {pod.metadata.name}\n
-                                Status: {pod.status.phase}\n
-                                Reason: {pod.status.reason}\n
-                                Message: {pod.status.message}""")
-                            raise Error(
-                                f"""Error in pod {pod.metadata.name}\n
-                                Status: {pod.status.phase}\n
-                                Reason: {pod.status.reason}\n
-                                Message: {pod.status.message}""")
-                        elif pod.status.phase == "Unknown":
-                            logger.info("unknown")
-                            logger.error(
-                                f"""Error in pod {pod.metadata.name}\n
-                                Status: {pod.status.phase}\n
-                                Reason: {pod.status.reason}\n
-                                Message: {pod.status.message}""")
-                            raise Error(
-                                f"""Error in pod {pod.metadata.name}\n
-                                Status: {pod.status.phase}\n
-                                Reason: {pod.status.reason}\n
-                                Message: {pod.status.message}""")
-                        else:
-                            logger.info(f"""Other status: {pod.metadata.name}\n
-                            Status: {pod.status.phase}\n""")
-                else:
-                    logger.info(f'Pods: {self.get_pods(namespace)}')
-                    break
-            else:
-                if time.time() > timer:
-                    logger.warn(f'Timeout - pods: {self.get_pods(namespace)}')
-                    break
-                time.sleep(2)
+    @keyword
+    def wait_for_pods_status(self, namespace: Union[str, None] = None,
+                             label_selector: Union[str, None] = None,
+                             timeout: int = 60) -> None:
+        """Wait for pods status
+
+        Args:
+            namespace (Union[str, None], optional): Namespace where the pods exist. Defaults to None.
+            label_selector (Union[str, None], optional): Pods' label selector. Defaults to None.
+            timeout (int, optional): Time to wait for pods status. Defaults to 60.
+
+        Raises:
+            Error: Raises error if there are pods in status failed or unknown
+        """
+        max_time = time.time() + timeout
+        while time.time() < max_time:
+            pods = self.get_pods(namespace=namespace, label_selector=label_selector)
+            if pods:
+                pending_pods = [pod for pod in pods if pod.status.phase == "Pending"]
+                if not pending_pods:
+                    failing_pods = [pod for pod in pods if pod.status.phase
+                                    == "Failed" or pod.status.phase == "Unknown"]
+                    if failing_pods:
+                        self.output_streamer.stream(self.output_formatter.format(
+                            "Error in Pod", failing_pods, "wide"), "error")
+                        raise Error(self.output_formatter.format(
+                            "There are pods in status Failed or Unknown: ", failing_pods, "name"))
+
+                    failing_containers = [pod for pod in pods if pod.status.phase
+                                          == "Running" and pod.status.conditions[3].status != "True"]
+                    if not failing_containers:
+                        self.output_streamer.stream(self.output_formatter.format("Pod", pods, "wide"), "info")
+                        break
+        else:
+            self.output_streamer.stream(self.output_formatter.format(
+                "Timeout - Pods:", self.get_pods(namespace), "wide"), "warn")
