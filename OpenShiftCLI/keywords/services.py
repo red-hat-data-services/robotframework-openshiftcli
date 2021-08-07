@@ -21,7 +21,7 @@ class ServiceKeywords(object):
         Returns:
             List[str]: List with all Services
         """
-        service_list = self.cliclient.get(name=None, namespace=namespace)
+        service_list = self.cliclient.get(name=None, namespace=namespace, label_selector=None)
         services_found = [service.metadata.name for service in service_list.items]
         if not services_found:
             logger.error(f'Services not found in {namespace}')
@@ -54,7 +54,7 @@ class ServiceKeywords(object):
         Returns:
           output(List): Values of service names and status with List
         """
-        service_list = self.cliclient.get(name=name, namespace=namespace)
+        service_list = self.cliclient.get(name=name, namespace=namespace, label_selector=None)
         service_found = [{service.metadata.name: f'{service.spec.clusterIPs}:{service.spec.ports}'}
                          for service in service_list.items]
         if not service_found:

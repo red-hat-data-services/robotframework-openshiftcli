@@ -33,7 +33,7 @@ class KFDEFKeywords(object):
         Returns:
             List[Dict[str, str]]: List of KfDef names and status
         """
-        kfdef_list = self.cliclient.get(name=None, namespace=namespace)
+        kfdef_list = self.cliclient.get(name=None, namespace=namespace, label_selector=None)
         if not kfdef_list:
             logger.error('Kfdef not found')
             raise Error('Kfdef not found')
