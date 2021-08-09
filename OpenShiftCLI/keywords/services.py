@@ -1,10 +1,11 @@
+from OpenShiftCLI.cliclient import Cliclient
 from robotlibcore import keyword
 from robot.api import logger, Error
 from typing import Dict, List, Union
 
 
 class ServiceKeywords(object):
-    def __init__(self, cliclient) -> None:
+    def __init__(self, cliclient: Cliclient) -> None:
         self.cliclient = cliclient
 
     @keyword
@@ -29,6 +30,17 @@ class ServiceKeywords(object):
             )
         logger.info(services_found)
         return services_found
+
+    @keyword
+    def delete_service(self, name: str, namespace: Union[str, None] = None, **kwargs) -> None:
+        """Delete Service
+
+        Args:
+            name (str): Service to delete
+            namespace (Union[str, None], optional): Namespace where the Service exists. Defaults to None.
+        """
+        result = self.cliclient.delete(name=name, namespace=namespace, **kwargs)
+        logger.info(result)
 
     @keyword
     def services_should_contain(self, name: str, namespace: Union[str, None] = None) -> List[Dict[str, str]]:

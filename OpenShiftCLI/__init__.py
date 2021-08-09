@@ -1,9 +1,16 @@
 from .version import VERSION
 from robotlibcore import DynamicCore
 from OpenShiftCLI.keywords import (
+    ClusterroleKeywords,
+    ClusterrolebindingKeywords,
+    ConfigmapKeywords,
+    CRDKeywords,
+    GroupKeywords,
+    KFDEFKeywords,
     ListKeywords,
     PodKeywords,
     ProjectKeywords,
+    RolebindingKeywords,
     SecretKeywords,
     ServiceKeywords,
 )
@@ -24,9 +31,17 @@ class OpenShiftCLI(DynamicCore):
     ROBOT_LIBRARY_VERSION = VERSION
 
     def __init__(self) -> None:
-        libraries = [ListKeywords(Apiclient('v1', 'List')),
-                     PodKeywords(Apiclient('v1', 'Pod')),
-                     ProjectKeywords(Apiclient('project.openshift.io/v1', 'Project')),
-                     SecretKeywords(Apiclient('v1', 'Secret')),
-                     ServiceKeywords(Apiclient('v1', 'Service'))]
+        libraries = [
+            ClusterroleKeywords(Apiclient('rbac.authorization.k8s.io/v1', 'ClusterRole')),
+            ClusterrolebindingKeywords(Apiclient('rbac.authorization.k8s.io/v1', 'ClusterRoleBinding')),
+            ConfigmapKeywords(Apiclient('v1', 'ConfigMap')),
+            CRDKeywords(Apiclient('apiextensions.k8s.io/v1', 'CustomResourceDefinition')),
+            GroupKeywords(Apiclient('user.openshift.io/v1', 'Group')),
+            KFDEFKeywords(Apiclient('kfdef.apps.kubeflow.org/v1', 'KfDef')),
+            ListKeywords(Apiclient('v1', 'List')),
+            PodKeywords(Apiclient('v1', 'Pod')),
+            ProjectKeywords(Apiclient('project.openshift.io/v1', 'Project')),
+            RolebindingKeywords(Apiclient('rbac.authorization.k8s.io/v1', 'RoleBinding')),
+            SecretKeywords(Apiclient('v1', 'Secret')),
+            ServiceKeywords(Apiclient('v1', 'Service'))]
         DynamicCore.__init__(self, libraries)
