@@ -9,9 +9,11 @@ from OpenShiftCLI.keywords import (
     ListKeywords,
     PodKeywords,
     ProjectKeywords,
+    RoleKeywords,
     RolebindingKeywords,
     SecretKeywords,
     ServiceKeywords,
+    UserKeywords
 )
 from .apiclient import Apiclient
 from .logstreamer import LogStreamer
@@ -44,7 +46,9 @@ class OpenShiftCLI(DynamicCore):
             ListKeywords(Apiclient('v1', 'List')),
             PodKeywords(Apiclient('v1', 'Pod'), PlaintextFormatter(), LogStreamer()),
             ProjectKeywords(Apiclient('project.openshift.io/v1', 'Project')),
+            RoleKeywords(Apiclient('rbac.authorization.k8s.io/v1', 'Role')),
             RolebindingKeywords(Apiclient('rbac.authorization.k8s.io/v1', 'RoleBinding')),
             SecretKeywords(Apiclient('v1', 'Secret')),
-            ServiceKeywords(Apiclient('v1', 'Service'))]
+            ServiceKeywords(Apiclient('v1', 'Service')),
+            UserKeywords(Apiclient('user.openshift.io/v1', 'User'))]
         DynamicCore.__init__(self, libraries)
