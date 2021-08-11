@@ -1,7 +1,7 @@
 from OpenShiftCLI.cliclient import Cliclient
 from robotlibcore import keyword
 from robot.api import logger
-from typing import Union
+from typing import Optional, Union
 import os
 import yaml
 
@@ -25,19 +25,18 @@ class SecretKeywords(object):
         logger.info(secret)
 
     @keyword
-    def create_secret(self, filename: str, namespace: Union[str, None] = None) -> None:
-        """Create a secret imperative mode
+    def create_secret(self, filename: str, namespace: Optional[str] = None) -> None:
+        """Create Secret
 
         Args:
-            filename (str): path to yaml file with the secret
-            namespace (Union[str,None], optional): Namespace. Defaults to None.
+            filename (str): Path to the yaml file containing the Secret definition
+            namespace (Optional[str]): Namespace where the Secret will be created
         """
         cwd = os.getcwd()
         with open(rf'{cwd}/{filename}') as file:
             secret_data = yaml.load(file, yaml.SafeLoader)
-            logger.info(secret_data)
-            secret = self.cliclient.create(body=secret_data, namespace=namespace)
-            logger.info(secret)
+        result = self.cliclient.create(body=secret_data, namespace=namespace)
+        logger.info(result)
 
     @keyword
     def delete_secret(self, name: str, namespace: Union[str, None] = None, **kwargs: str) -> None:
