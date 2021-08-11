@@ -1,7 +1,10 @@
+import os
 from robotlibcore import keyword
 from robot.api import Error
-from typing import List, Dict, Union
+from typing import List, Dict, Optional, Union
 import time
+
+import yaml
 try:
     from typing import Literal
 except ImportError:
@@ -15,7 +18,32 @@ class PodKeywords(object):
         self.output_streamer = output_streamer
 
     @keyword
-    def get_pods(self, namespace: Union[str, None] = None, label_selector: Union[str, None] = None) -> List:
+    def create_pod(self, filename: str, namespace: Optional[str] = None) -> None:
+        """Create Pod
+
+        Args:
+            filename (str): Path to the yaml file containing the Pod definition
+            namespace (Optional[str]): Namespace where Pod will be created
+        """
+        cwd = os.getcwd()
+        with open(rf'{cwd}/{filename}') as file:
+            pod_data = yaml.load(file, yaml.SafeLoader)
+        result = self.cliclient.create(body=pod_data, namespace=namespace)
+        self.output_streamer.stream(result, "info")
+
+    @keyword
+    def delete_pod(self, name: str, namespace: Optional[str] = None, **kwargs: str) -> None:
+        """Delete Pod
+
+        Args:
+            name (str): Pod to delete
+            namespace (Optional[str]): Namespace where the Pod exists
+        """
+        result = self.cliclient.delete(name=name, namespace=namespace, **kwargs)
+        self.output_streamer.stream(result, "info")
+
+    @keyword
+    def get_pods(self, namespace: Union[str, None] = None, label_selector: Union[str, None] = None, **kwargs) -> List:
         """Get Pods
 
         Args:
@@ -28,34 +56,38 @@ class PodKeywords(object):
             List: List of pods
         """
 
-        result = self.cliclient.get(name=None, namespace=namespace, label_selector=label_selector).items
+        result = self.cliclient.get(name=None, namespace=namespace, label_selector=label_selector, **kwargs).items
         if not result:
             self.output_streamer.stream(f'Pods not found in {namespace}', "error")
             raise Error(f'Pods not found in {namespace}')
         return result
 
     @keyword
-    def pods_should_contain(self, name: str, namespace: Union[str, None] = None) -> List[Dict[str, str]]:
-        """
-        Get pods starting with name
+    def search_pods(self, name: str = "",
+                    label_selector: Optional[str] = None,
+                    namespace: Optional[str] = None) -> List[Dict[str, str]]:
+        """Search for pods with name containing a given string and/or
+           having a given label selector and/or from a given namespace
 
         Args:
-          name: starting name of the pod eg: jupyterhub-db
-          namespace: namespace
+            name (Optional[str], optional): String that pods name should contain. Defaults to None.
+            label_selector (Optional[str], optional): Label selector that pods should have. Defaults to None.
+            namespace (Optional[str], optional): [description]. Defaults to None.
+
+        Raises:
+            Error: Raise error if not pods found in search
 
         Returns:
-          output(List): Values of pod names and status with List
+            List[Dict[str, str]]: List of pods found in search
         """
-        pod_list = self.cliclient.get(name=None, namespace=namespace, label_selector=None)
-        pod_found = [{"name": pod.metadata.name, "status": pod.status.phase}
-                     for pod in pod_list.items if (pod.metadata.name).startswith(name)]
-        self.output_streamer(pod_found, "info")
-        if not pod_found:
-            self.output_streamer(f'Pod {name} not found in namespace {namespace}', "error")
-            raise Error(
-                f'Pod {name} not found in namespace {namespace}'
-            )
-        return pod_found
+        pods = self.cliclient.get(name=None, namespace=namespace, label_selector=label_selector).items
+
+        result = [pod for pod in pods if name in pod.metadata.name]
+        if not result:
+            self.output_streamer.stream('Pods not found in search', "error")
+            raise Error('Pods not found in search')
+        self.output_streamer.stream(self.output_formatter.format("Pods found", result, "status"), "info")
+        return result
 
     @keyword
     def wait_for_pods_number(self, number: int,
