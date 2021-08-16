@@ -23,6 +23,9 @@ Test Service Keywords
 Test Secret Keywords
   New Project  test-secrets
   Create Secret  test-data/secret.yaml  namespace=test-secrets
+  Apply Secret  https://api.github.com/repos/pablofelix/robotframework-OpenShiftCLI/contents/test-data/secret.yaml?ref\=/feature/templates  namespace=test-secrets
+  Run Keyword And Expect Error  Content was not found. Verify url https://api.github.com/repos/pablofelix/robotframework-OpenShiftCLI/contents/test-data/secreto.yaml?ref\=/feature/templates is correct
+  ...  Apply Secret  https://api.github.com/repos/pablofelix/robotframework-OpenShiftCLI/contents/test-data/secreto.yaml?ref\=/feature/templates  namespace=test-secrets
   Apply Secret  test-data/secret_apply.yaml  namespace=test-secrets
   Delete Secret  my-secret  namespace=test-secrets
   Delete Secret From File  test-data/secret_apply.yaml

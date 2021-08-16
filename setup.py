@@ -50,7 +50,8 @@ setup(
         "Jinja2",
         "flake8",
         "mypy",
-        "kubernetes"
+        "kubernetes",
+        "validators"
     ],
     zip_safe=True,
     include_package_data=True,
