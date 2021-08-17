@@ -5,29 +5,29 @@ from robotlibcore import keyword
 from robot.api import logger
 
 
-class GroupKeywords(object):
+class UserKeywords(object):
     def __init__(self, cliclient: Cliclient) -> None:
         self.cliclient = cliclient
 
     @keyword
-    def create_group(self, filename: str) -> None:
-        """Create Group
+    def create_user(self, filename: str) -> None:
+        """Create User
 
         Args:
-            filename (str): Path to the yaml file containing the Group definition
+            filename (str): Path to the yaml file containing the User definition
         """
         cwd = os.getcwd()
         with open(rf'{cwd}/{filename}') as file:
-            group_data = yaml.load(file, yaml.SafeLoader)
-        result = self.cliclient.create(body=group_data, namespace=None)
+            user_data = yaml.load(file, yaml.SafeLoader)
+        result = self.cliclient.create(body=user_data, namespace=None)
         logger.info(result)
 
     @keyword
-    def delete_group(self, name: str, **kwargs: str) -> None:
-        """Delete Group
+    def delete_user(self, name: str, **kwargs: str) -> None:
+        """Delete User
 
         Args:
-            name (str): Group to delete
+            name (str): User to delete
         """
         result = self.cliclient.delete(name=name, namespace=None, **kwargs)
         logger.info(result)

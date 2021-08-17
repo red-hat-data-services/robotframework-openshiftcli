@@ -22,8 +22,8 @@ class Apiclient(Cliclient):
     def delete_from_file(self, body, namespace, **kwargs):
         return self._get_objects().delete(body=body, namespace=namespace, **kwargs)
 
-    def get(self, name, namespace):
-        return self._get_objects().get(name=name, namespace=namespace)
+    def get(self, name, namespace, label_selector):
+        return self._get_objects().get(name=name, namespace=namespace, label_selector=label_selector)
 
     def patch(self, name, body, namespace, **kwargs):
         return self._get_objects().patch(name=name, body=body, namespace=namespace, **kwargs)

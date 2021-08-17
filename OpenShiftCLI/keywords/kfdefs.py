@@ -1,13 +1,30 @@
+import os
+
+import yaml
 from OpenShiftCLI.cliclient import Cliclient
 from robotlibcore import keyword
 from robot.api import logger, Error
-from typing import List, Dict, Union
+from typing import List, Dict, Optional, Union
 import json
 
 
 class KFDEFKeywords(object):
     def __init__(self, cliclient: Cliclient) -> None:
         self.cliclient = cliclient
+
+    @keyword
+    def create_kfdef(self, filename: str, namespace: Optional[str] = None) -> None:
+        """Create KfDef
+
+        Args:
+            filename (str): Path to the yaml file containing the KfDef definition
+            namespace (Optional[str]): Namespace where the KfDef will be created
+        """
+        cwd = os.getcwd()
+        with open(rf'{cwd}/{filename}') as file:
+            kfdef_data = yaml.load(file, yaml.SafeLoader)
+        result = self.cliclient.create(body=kfdef_data, namespace=namespace)
+        logger.info(result)
 
     @keyword
     def delete_kfdef(self, name: str, namespace: Union[str, None] = None, **kwargs: str) -> None:
@@ -33,7 +50,7 @@ class KFDEFKeywords(object):
         Returns:
             List[Dict[str, str]]: List of KfDef names and status
         """
-        kfdef_list = self.cliclient.get(name=None, namespace=namespace)
+        kfdef_list = self.cliclient.get(name=None, namespace=namespace, label_selector=None)
         if not kfdef_list:
             logger.error('Kfdef not found')
             raise Error('Kfdef not found')

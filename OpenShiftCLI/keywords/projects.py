@@ -40,7 +40,7 @@ class ProjectKeywords(object):
         Returns:
             List[str]: List of Project names
         """
-        project_list = self.cliclient.get(name=None, namespace=None)
+        project_list = self.cliclient.get(name=None, namespace=None, label_selector=None)
         result = [project.metadata.name for project in project_list.items]
         logger.info(result)
         return result
@@ -76,7 +76,7 @@ class ProjectKeywords(object):
         Returns:
           output(Dictionary): Values of project names and status in a List
         """
-        project_list = self.cliclient.get(name=name, namespace=None)
+        project_list = self.cliclient.get(name=name, namespace=None, label_selector=None)
         project_found = {project_list.metadata.name: project_list.status.phase}
         if not project_found:
             logger.error(f'Pod {name} not found')

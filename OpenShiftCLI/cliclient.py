@@ -20,7 +20,7 @@ class Cliclient(ABC):
         pass
 
     @abstractmethod
-    def get(self, name, namespace):
+    def get(self, name, namespace, label_selector):
         pass
 
     @abstractmethod
