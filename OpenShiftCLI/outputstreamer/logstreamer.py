@@ -1,5 +1,6 @@
 from robot.api import logger
-from .outputstreamer import OutputStreamer
+
+from OpenShiftCLI.outputstreamer import OutputStreamer
 
 
 class LogStreamer(OutputStreamer):

@@ -1,27 +1,28 @@
-from OpenShiftCLI.cliclient import Cliclient
+from typing import Optional
+
 from robotlibcore import keyword
-from robot.api import logger, Error
-from typing import List, Dict, Union
-import os
-import yaml
+
+from OpenShiftCLI.base import LibraryComponent
+from OpenShiftCLI.cliclient import CliClient
+from OpenShiftCLI.dataloader import DataLoader
+from OpenShiftCLI.dataparser import DataParser
+from OpenShiftCLI.outputformatter import OutputFormatter
+from OpenShiftCLI.outputstreamer import OutputStreamer
+from OpenShiftCLI.errors import ResourceNotFound
 
 
-class ProjectKeywords(object):
-    def __init__(self, cliclient: Cliclient) -> None:
-        self.cliclient = cliclient
-
-    @keyword
-    def apply_project(self, name: str) -> None:
-        """Create a project in declarative mode
-
-        Args:
-            name (str): Project name
-        """
-        cwd = os.getcwd()
-        with open(rf'{cwd}/{name}') as file:
-            project = yaml.load(file, yaml.SafeLoader)
-        apply_project = self.cliclient.apply(body=project, namespace=None)
-        logger.info(apply_project)
+class ProjectKeywords(LibraryComponent):
+    def __init__(self,
+                 cli_client: CliClient,
+                 data_loader: DataLoader,
+                 data_parser: DataParser,
+                 output_formatter: OutputFormatter,
+                 output_streamer: OutputStreamer) -> None:
+        LibraryComponent.__init__(self, cli_client, data_loader, data_parser, output_formatter, output_streamer)
+        self.cli_client = cli_client
+        self.data_loader = data_loader
+        self.output_formatter = output_formatter
+        self.output_streamer = output_streamer
 
     @keyword
     def delete_project(self, name: str, **kwargs: str) -> None:
@@ -30,20 +31,13 @@ class ProjectKeywords(object):
         Args:
             name (str): Project to delete
         """
-        result = self.cliclient.delete(name=name, namespace=None, **kwargs)
-        logger.info(result)
+        self.process(operation="delete", type="name", name=name, **kwargs)
 
     @keyword
-    def get_projects(self) -> List[str]:
+    def get_projects(self) -> None:
         """Get All Projects
-
-        Returns:
-            List[str]: List of Project names
         """
-        project_list = self.cliclient.get(name=None, namespace=None, label_selector=None)
-        result = [project.metadata.name for project in project_list.items]
-        logger.info(result)
-        return result
+        self.process(operation="get", type="name")
 
     @keyword
     def new_project(self, name: str) -> None:
@@ -53,49 +47,57 @@ class ProjectKeywords(object):
             name (str): Project name
         """
         project = f"""
-      apiVersion: project.openshift.io/v1
-      kind: Project
-      metadata:
-        name: {name}
-      spec:
-        finalizers:
+        apiVersion: project.openshift.io/v1
+        kind: Project
+        metadata:
+          name: {name}
+        spec:
+          finalizers:
           - kubernetes
-      """
-        project_data = yaml.load(project, yaml.SafeLoader)
-        new_project = self.cliclient.create(body=project_data, namespace=None)
-        logger.info(new_project)
+        """
+        self.process(operation="create", type="body", data_type="yaml", body=project)
 
     @keyword
-    def projects_should_contain(self, name: str) -> Dict[str, str]:
-        """
-        Get projects starting with name
+    def projects_should_contain(self, name: str) -> None:
+        """Get projects containing name
 
         Args:
-          name: name of the project
-
-        Returns:
-          output(Dictionary): Values of project names and status in a List
+          name: String that must contain the name of the project
         """
-        project_list = self.cliclient.get(name=name, namespace=None, label_selector=None)
-        project_found = {project_list.metadata.name: project_list.status.phase}
-        if not project_found:
-            logger.error(f'Pod {name} not found')
-            raise Error(
-                f'Pod {name} not found'
-            )
-        logger.info(project_found)
-        return project_found
+        projects = self.cli_client.get()['items']
+        result = [project for project in projects if name in project['metadata']['name']]
+        if not result:
+            error_message = f'Projects with name containing {name} not found'
+            self.output_streamer.stream(error_message, "error")
+            raise ResourceNotFound(error_message)
+        output = [{project['metadata']['name']: project['status']['phase'] for project in result}]
+        formatted_output = self.output_formatter.format(output, "Projects found")
+        self.output_streamer.stream(formatted_output, "info")
 
     @keyword
-    def wait_until_project_exists(self, name: Union[str, None] = None, timeout: Union[int, None] = 100) -> None:
+    def wait_until_project_exists(self, name: Optional[str] = None, timeout: Optional[int] = 100) -> None:
         """Wait until a Project exists
 
         Args:
-            name (Union[str, None], optional): Project to wait for. Defaults to None.
-            timeout (Union[int, None], optional): Time to wait. Defaults to 100.
+            name (Optional[str], optional): Project to wait for. Defaults to None.
+            timeout (Optional[int], optional): Time to wait. Defaults to 100.
         """
-        for event in self.cliclient.watch(namespace=None, name=None, timeout=timeout):
-            if event['object'].metadata.name == name:
-                logger.info(f"Project {name} found")
-                logger.info(f'{event["object"].metadata.name}\nStatus:{event["object"].status.phase}')
+        for event in self.cli_client.watch(namespace=None, name=None, timeout=timeout):
+            if event['object']['metadata']['name'] == name:
+                self.output_streamer.stream(f"Project {name} found", "info")
+                self.output_streamer.stream(
+                    f"{event['object']['metadata']['name']}\nStatus:{event['object']['status']['phase']}", "info")
+                break
+
+    @keyword
+    def wait_until_project_does_not_exists(self, name: Optional[str] = None, timeout: Optional[int] = 100) -> None:
+        """Wait until a Project doesn't exists
+
+        Args:
+            name (Optional[str], optional): Project to wait for. Defaults to None.
+            timeout (Optional[int], optional): Time to wait. Defaults to 100.
+        """
+        for event in self.cli_client.watch(namespace=None, name=None, timeout=timeout):
+            if event['object']['metadata']['name'] == name and event['type'] == "DELETED":
+                self.output_streamer.stream(f"Project {name} Deleted", "info")
                 break

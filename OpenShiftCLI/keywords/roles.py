@@ -1,37 +1,38 @@
-import os
-
-import yaml
-from OpenShiftCLI.cliclient import Cliclient
-from robotlibcore import keyword
-from robot.api import logger
 from typing import Optional
 
+from robotlibcore import keyword
 
-class RoleKeywords(object):
-    def __init__(self, cliclient: Cliclient) -> None:
-        self.cliclient = cliclient
+from OpenShiftCLI.base import LibraryComponent
+from OpenShiftCLI.cliclient import CliClient
+from OpenShiftCLI.dataloader import DataLoader
+from OpenShiftCLI.dataparser import DataParser
+from OpenShiftCLI.outputformatter import OutputFormatter
+from OpenShiftCLI.outputstreamer import OutputStreamer
+
+
+class RoleKeywords(LibraryComponent):
+    def __init__(self, cli_client: CliClient,
+                 data_loader: DataLoader, data_parser: DataParser,
+                 output_formatter: OutputFormatter,
+                 output_streamer: OutputStreamer) -> None:
+        LibraryComponent.__init__(self, cli_client, data_loader, data_parser, output_formatter, output_streamer)
 
     @keyword
-    def create_role(self, filename: str, namespace: Optional[str] = None) -> None:
+    def create_role(self, file: str, namespace: Optional[str] = None) -> None:
         """Create Role
 
         Args:
-            filename (str): Path to the yaml file containing the Role definition
+            file (str): Path to the yaml file containing the Role definition
             namespace (Optional[str]): Namespace where the Role will be created
         """
-        cwd = os.getcwd()
-        with open(rf'{cwd}/{filename}') as file:
-            role_data = yaml.load(file, yaml.SafeLoader)
-        result = self.cliclient.create(body=role_data, namespace=namespace)
-        logger.info(result)
+        self.process(operation="create", type="body", data_type="yaml", file=file, namespace=namespace)
 
     @keyword
-    def delete_role(self, name: str, namespace: Optional[str] = None, **kwargs) -> None:
+    def delete_role(self, name: str, namespace: Optional[str] = None, **kwargs: str) -> None:
         """Delete Role
 
         Args:
             name (str): Role to delete
             namespace (Optional[str]): Namespace where the Role exists
         """
-        result = self.cliclient.delete(name=name, namespace=namespace, **kwargs)
-        logger.info(result)
+        self.process(operation="delete", type="name", name=name, namespace=namespace, **kwargs)

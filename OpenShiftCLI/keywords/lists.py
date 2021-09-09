@@ -1,54 +1,50 @@
-from OpenShiftCLI.cliclient import Cliclient
+from typing import Optional
+
 from robotlibcore import keyword
-from robot.api import logger
-from typing import Optional, Union
-import os
-import yaml
+
+from OpenShiftCLI.base import LibraryComponent
+from OpenShiftCLI.cliclient import CliClient
+from OpenShiftCLI.dataloader import DataLoader
+from OpenShiftCLI.dataparser import DataParser
+from OpenShiftCLI.outputformatter import OutputFormatter
+from OpenShiftCLI.outputstreamer import OutputStreamer
 
 
-class ListKeywords(object):
-    def __init__(self, cliclient: Cliclient) -> None:
-        self.cliclient = cliclient
-
-    @keyword
-    def apply_objects_list(self, filename: str, namespace: Union[str, None] = None) -> None:
-        """Apply Objects list in Openshift (Declarative Mode)
-
-        Args:
-            filename (str): Path to the list of object
-            namespace (str, optional): Namespace. Defaults to None.
-        """
-        cwd = os.getcwd()
-        with open(rf'{cwd}/{filename}') as file:
-            list_data = yaml.load(file, yaml.SafeLoader)
-        list = self.cliclient.apply(body=list_data, namespace=namespace)
-        logger.info(list)
+class ListKeywords(LibraryComponent):
+    def __init__(self,
+                 cli_client: CliClient,
+                 data_loader: DataLoader,
+                 data_parser: DataParser,
+                 output_formatter: OutputFormatter,
+                 output_streamer: OutputStreamer) -> None:
+        LibraryComponent.__init__(self, cli_client, data_loader, data_parser, output_formatter, output_streamer)
 
     @keyword
-    def create_objects_list(self, filename: str, namespace: Optional[str] = None) -> None:
-        """Create an List of Objects
+    def apply_resources_list(self, file: str, namespace: Optional[str] = None) -> None:
+        """Apply Resources List
 
         Args:
-            filename (str): Path to yaml file containing the List of Objects definition
-            namespace (Optional[str]): Namespace where the List of Objects will be created
+            file (str): Path to the yaml file containing the Resources List definition
+            namespace (str, optional): Namespace where the Resources List will be created. Defaults to None.
         """
-        cwd = os.getcwd()
-        with open(rf'{cwd}/{filename}') as file:
-            list_data = yaml.load(file, yaml.SafeLoader)
-            logger.info(list_data)
-            result = self.cliclient.create(body=list_data, namespace=namespace)
-            logger.info(result)
+        self.process(operation="apply", type="body", data_type="yaml", file=file, namespace=namespace)
 
     @keyword
-    def delete_objects_list_from_file(self, filename: str, namespace: Union[str, None] = None) -> None:
-        """Delete List of Objects From File
+    def create_resources_list(self, file: str, namespace: Optional[str] = None) -> None:
+        """Create Resources List
 
         Args:
-            filename (str): Path to the List of Objects to delete
-            namespace (Union[str, None], optional): Namespace where the List of Objects exists. Defaults to None.
+            file (str): Path to yaml file containing the Resources List definition
+            namespace (Optional[str], optional): Namespace where the Resources List will be created
         """
-        cwd = os.getcwd()
-        with open(rf'{cwd}/{filename}') as file:
-            list_data = yaml.load(file, yaml.SafeLoader)
-        result = self.cliclient.delete_from_file(body=list_data, namespace=namespace)
-        logger.info(result)
+        self.process(operation="create", type="body", data_type="yaml", file=file, namespace=namespace)
+
+    @keyword
+    def delete_resources_list(self, file: str, namespace: Optional[str] = None) -> None:
+        """Delete Resources List
+
+        Args:
+            file (str): Path to the Resources List to delete
+            namespace (Union[str, None], optional): Namespace where the Resources List exists. Defaults to None.
+        """
+        self.process(operation="delete_from_file", type="body", data_type="yaml", file=file, namespace=namespace)

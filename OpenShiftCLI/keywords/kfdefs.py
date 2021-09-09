@@ -1,74 +1,69 @@
-import os
+from typing import Optional
 
-import yaml
-from OpenShiftCLI.cliclient import Cliclient
 from robotlibcore import keyword
-from robot.api import logger, Error
-from typing import List, Dict, Optional, Union
-import json
+
+from OpenShiftCLI.base import LibraryComponent
+from OpenShiftCLI.cliclient import CliClient
+from OpenShiftCLI.dataloader import DataLoader
+from OpenShiftCLI.dataparser import DataParser
+from OpenShiftCLI.outputformatter import OutputFormatter
+from OpenShiftCLI.outputstreamer import OutputStreamer
 
 
-class KFDEFKeywords(object):
-    def __init__(self, cliclient: Cliclient) -> None:
-        self.cliclient = cliclient
+class KFDEFKeywords(LibraryComponent):
+    def __init__(self,
+                 cli_client: CliClient,
+                 data_loader: DataLoader,
+                 data_parser: DataParser,
+                 output_formatter: OutputFormatter,
+                 output_streamer: OutputStreamer) -> None:
+        LibraryComponent.__init__(self, cli_client, data_loader, data_parser, output_formatter, output_streamer)
+        self.cli_client = cli_client
+        self.output_formatter = output_formatter
+        self.output_streamer = output_streamer
 
     @keyword
-    def create_kfdef(self, filename: str, namespace: Optional[str] = None) -> None:
+    def create_kfdef(self, file: str, namespace: Optional[str] = None) -> None:
         """Create KfDef
 
         Args:
-            filename (str): Path to the yaml file containing the KfDef definition
+            file(str): Path to the yaml file containing the KfDef definition
             namespace (Optional[str]): Namespace where the KfDef will be created
         """
-        cwd = os.getcwd()
-        with open(rf'{cwd}/{filename}') as file:
-            kfdef_data = yaml.load(file, yaml.SafeLoader)
-        result = self.cliclient.create(body=kfdef_data, namespace=namespace)
-        logger.info(result)
+        self.process(operation="create", type="body", data_type="yaml", file=file, namespace=namespace)
 
     @keyword
-    def delete_kfdef(self, name: str, namespace: Union[str, None] = None, **kwargs: str) -> None:
+    def delete_kfdef(self, name: str, namespace: Optional[str] = None, **kwargs: str) -> None:
         """Delete KfDef
 
         Args:
             name (str): KfDef to delete
             namespace (Union[str, None], optional): Namespace where the KfDef exists. Defaults to None.
         """
-        result = self.cliclient.delete(name=name, namespace=namespace, **kwargs)
-        logger.info(result)
+        self.process(operation="delete", type="name", name=name, namespace=namespace, **kwargs)
 
     @keyword
-    def get_kfdefs(self, namespace: Union[str, None] = None) -> List[Dict[str, str]]:
+    def get_kfdefs(self, namespace: Optional[str] = None, label_selector: Optional[str] = None) -> None:
         """Get KfDefs
 
         Args:
-            namespace (Union[str, None], optional): Namespace where KfDefs exist. Defaults to None.
-
-        Raises:
-            Error: Raises error if no KfDefs found
-
-        Returns:
-            List[Dict[str, str]]: List of KfDef names and status
+            namespace (Optional[str], optional): Namespace where the KfDefs exist. Defaults to None.
+            label_selector (Optional[str], optional): Label selector of the KfDefs. Defaults to None.
         """
-        kfdef_list = self.cliclient.get(name=None, namespace=namespace, label_selector=None)
-        if not kfdef_list:
-            logger.error('Kfdef not found')
-            raise Error('Kfdef not found')
-        result = [{"name": kfdef.metadata.name, "status": kfdef.status.conditions} for kfdef in kfdef_list.items]
-        logger.info(result)
-        return result
+        self.process(operation="get", type="name", namespace=namespace, label_selector=label_selector)
 
     @keyword
-    def patch_kfdef(self, name: Union[str, None] = None, body: Union[str, None] = None,
-                    namespace: Union[str, None] = None, **kwargs: str) -> None:
-        """Delete KfDef
+    def patch_kfdef(self,
+                    name: Optional[str] = None,
+                    body: Optional[str] = None,
+                    namespace: Optional[str] = None,
+                    **kwargs: str) -> None:
+        """Patch KfDef
 
         Args:
-            name (Union[str, None], optional): KfDef to delete. Defaults to None.
-            body (Union[str, None], optional): KfDef definition file. Defaults to None.
-            namespace (Union[str, None], optional): Namespace where the KfDef exists. Defaults to None.
+            name (Optional[str], optional): KfDef to patch. Defaults to None.
+            body (Optional[str], optional): KfDef definition file. Defaults to None.
+            namespace (Optional[str], optional): Namespace where the KfDef exists. Defaults to None.
         """
-        kfdef_data = json.loads(body)
-        result = self.cliclient.patch(name=name, body=kfdef_data, namespace=namespace,
-                                      content_type='application/merge-patch+json')
-        logger.info(result)
+        self.process(operation="patch", type="patch", data_type="json",
+                     name=name, body=body, namespace=namespace, **kwargs)
