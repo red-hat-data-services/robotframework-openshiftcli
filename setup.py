@@ -29,7 +29,7 @@ setup(
     long_description=DESCRIPTION,
     author='Vasu Kulkarni',
     author_email='vasu@redhat.com',
-    url='https://github.com/vasukulkarni/robotframework-OpenShiftCLI',
+    url='https://github.com/red-hat-data-services/robotframework-OpenShiftCLI',
     license='Apache License 2.0',
     keywords='robotframework openshift cli',
     platforms='any',
