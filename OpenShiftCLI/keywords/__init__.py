@@ -1,6 +1,6 @@
 
-from .clusterroles import ClusterroleKeywords
 from .clusterrolebindings import ClusterrolebindingKeywords
+from .clusterroles import ClusterroleKeywords
 from .configmaps import ConfigmapKeywords
 from .crds import CRDKeywords
 from .groups import GroupKeywords

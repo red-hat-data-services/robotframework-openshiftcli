@@ -1,37 +1,40 @@
-import os
+from typing import Optional
 
-import yaml
-from OpenShiftCLI.cliclient import Cliclient
 from robotlibcore import keyword
-from robot.api import logger
-from typing import Optional, Union
+
+from OpenShiftCLI.base import LibraryComponent
+from OpenShiftCLI.cliclient import CliClient
+from OpenShiftCLI.dataloader import DataLoader
+from OpenShiftCLI.dataparser import DataParser
+from OpenShiftCLI.outputformatter import OutputFormatter
+from OpenShiftCLI.outputstreamer import OutputStreamer
 
 
-class CRDKeywords(object):
-    def __init__(self, cliclient: Cliclient) -> None:
-        self.cliclient = cliclient
+class CRDKeywords(LibraryComponent):
+    def __init__(self,
+                 cli_client: CliClient,
+                 data_loader: DataLoader,
+                 data_parser: DataParser,
+                 output_formatter: OutputFormatter,
+                 output_streamer: OutputStreamer) -> None:
+        LibraryComponent.__init__(self, cli_client, data_loader, data_parser, output_formatter, output_streamer)
 
     @keyword
-    def create_crd(self, filename: str, namespace: Optional[str] = None) -> None:
+    def create_crd(self, file: str, namespace: Optional[str] = None) -> None:
         """Create Custom Resource Definition
 
         Args:
-            filename (str): Path to the yaml file containing the Custom Resource Definition definition
-            namespace (Optional[str]): Namespace where the Custom Resource Definition will be created
+            file (str): Path to the yaml file containing the Custom Resource Definition definition
+            namespace (Optional[str]): Namespace where the Custom Resource Definition will be created. Defaults to None.
         """
-        cwd = os.getcwd()
-        with open(rf'{cwd}/{filename}') as file:
-            crd_data = yaml.load(file, yaml.SafeLoader)
-        result = self.cliclient.create(body=crd_data, namespace=namespace)
-        logger.info(result)
+        self.process(operation="create", type="body", data_type="yaml", file=file, namespace=namespace)
 
     @keyword
-    def delete_crd(self, name: str, namespace: Union[str, None] = None, **kwargs: str) -> None:
+    def delete_crd(self, name: str, namespace: Optional[str] = None, **kwargs: str) -> None:
         """Delete Custom Resource Definition
 
         Args:
             name (str): Custom Resource Definition to delete
-            namespace (Union[str, None], optional): Namespace where the CRD exists. Defaults to None.
+            namespace (Optional[str], optional): Namespace where the CRD exists. Defaults to None.
         """
-        result = self.cliclient.delete(name=name, namespace=namespace, **kwargs)
-        logger.info(result)
+        self.process(operation="delete", type="name", name=name, namespace=namespace, **kwargs)

@@ -1,26 +1,30 @@
-import os
-import yaml
-from OpenShiftCLI.cliclient import Cliclient
 from robotlibcore import keyword
-from robot.api import logger
+
+from OpenShiftCLI.base import LibraryComponent
+from OpenShiftCLI.cliclient import CliClient
+from OpenShiftCLI.dataloader import DataLoader
+from OpenShiftCLI.dataparser import DataParser
+from OpenShiftCLI.outputformatter import OutputFormatter
+from OpenShiftCLI.outputstreamer import OutputStreamer
 
 
-class GroupKeywords(object):
-    def __init__(self, cliclient: Cliclient) -> None:
-        self.cliclient = cliclient
+class GroupKeywords(LibraryComponent):
+    def __init__(self,
+                 cli_client: CliClient,
+                 data_loader: DataLoader,
+                 data_parser: DataParser,
+                 output_formatter: OutputFormatter,
+                 output_streamer: OutputStreamer) -> None:
+        LibraryComponent.__init__(self, cli_client, data_loader, data_parser, output_formatter, output_streamer)
 
     @keyword
-    def create_group(self, filename: str) -> None:
+    def create_group(self, file: str) -> None:
         """Create Group
 
         Args:
-            filename (str): Path to the yaml file containing the Group definition
+            file (str): Path to the yaml file containing the Group definition
         """
-        cwd = os.getcwd()
-        with open(rf'{cwd}/{filename}') as file:
-            group_data = yaml.load(file, yaml.SafeLoader)
-        result = self.cliclient.create(body=group_data, namespace=None)
-        logger.info(result)
+        self.process(operation="create", type="body", data_type="yaml", file=file)
 
     @keyword
     def delete_group(self, name: str, **kwargs: str) -> None:
@@ -29,5 +33,4 @@ class GroupKeywords(object):
         Args:
             name (str): Group to delete
         """
-        result = self.cliclient.delete(name=name, namespace=None, **kwargs)
-        logger.info(result)
+        self.process(operation="delete", type=name, name=name, **kwargs)

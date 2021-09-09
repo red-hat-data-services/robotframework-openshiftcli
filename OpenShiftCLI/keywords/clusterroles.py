@@ -1,34 +1,36 @@
-import os
-
-import yaml
-from OpenShiftCLI.cliclient import Cliclient
 from robotlibcore import keyword
-from robot.api import logger
+
+from OpenShiftCLI.base import LibraryComponent
+from OpenShiftCLI.cliclient import CliClient
+from OpenShiftCLI.dataloader import DataLoader
+from OpenShiftCLI.dataparser import DataParser
+from OpenShiftCLI.outputformatter import OutputFormatter
+from OpenShiftCLI.outputstreamer import OutputStreamer
 
 
-class ClusterroleKeywords(object):
-    def __init__(self, cliclient: Cliclient) -> None:
-        self.cliclient = cliclient
+class ClusterroleKeywords(LibraryComponent):
+    def __init__(self,
+                 cli_client: CliClient,
+                 data_loader: DataLoader,
+                 data_parser: DataParser,
+                 output_formatter: OutputFormatter,
+                 output_streamer: OutputStreamer) -> None:
+        LibraryComponent.__init__(self, cli_client, data_loader, data_parser, output_formatter, output_streamer)
 
     @keyword
-    def create_cluster_role(self, filename: str) -> None:
+    def create_cluster_role(self, file: str) -> None:
         """Create Cluster Role
 
         Args:
-            filename (str): Path to the yaml file containing the Cluster Role definition
+            file (str): Path to the yaml file containing the Cluster Role definition
         """
-        cwd = os.getcwd()
-        with open(rf'{cwd}/{filename}') as file:
-            cluster_role_data = yaml.load(file, yaml.SafeLoader)
-        result = self.cliclient.create(body=cluster_role_data, namespace=None)
-        logger.info(result)
+        self.process(operation="create", type="body", data_type="yaml", file=file)
 
     @keyword
     def delete_cluster_role(self, name: str, **kwargs: str) -> None:
         """Delete Cluster Role
 
-            Args:
-                name (str): Cluster Role to delete
-            """
-        result = self.cliclient.delete(name=name, namespace=None, **kwargs)
-        logger.info(result)
+        Args:
+            name (str): Cluster Role to delete
+        """
+        self.process(operation="delete", type="name", name=name, **kwargs)

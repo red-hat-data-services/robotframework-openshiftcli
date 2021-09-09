@@ -1,82 +1,73 @@
-import os
+from typing import Optional
 
-import yaml
-from OpenShiftCLI.cliclient import Cliclient
 from robotlibcore import keyword
-from robot.api import logger, Error
-from typing import Dict, List, Optional, Union
+
+from OpenShiftCLI.base import LibraryComponent
+from OpenShiftCLI.cliclient import CliClient
+from OpenShiftCLI.dataloader import DataLoader
+from OpenShiftCLI.dataparser import DataParser
+from OpenShiftCLI.outputformatter import OutputFormatter
+from OpenShiftCLI.outputstreamer import OutputStreamer
+from OpenShiftCLI.errors import ResourceNotFound
 
 
-class ServiceKeywords(object):
-    def __init__(self, cliclient: Cliclient) -> None:
-        self.cliclient = cliclient
+class ServiceKeywords(LibraryComponent):
+    def __init__(self,
+                 cli_client: CliClient,
+                 data_loader: DataLoader,
+                 data_parser: DataParser,
+                 output_formatter: OutputFormatter,
+                 output_streamer: OutputStreamer) -> None:
+        LibraryComponent.__init__(self, cli_client, data_loader, data_parser, output_formatter, output_streamer)
+        self.cli_client = cli_client
+        self.output_formatter = output_formatter
+        self.output_streamer = output_streamer
 
     @keyword
-    def create_service(self, filename: str, namespace: Optional[str] = None) -> None:
+    def create_service(self, file: str, namespace: Optional[str] = None) -> None:
         """Create Service
 
         Args:
-            filename (str): Path to the yaml file containing the Service definition
+            file(str): Path to the yaml file containing the Service definition
             namespace (Optional[str]): Namespace where the Cluster Service will be created
         """
-        cwd = os.getcwd()
-        with open(rf'{cwd}/{filename}') as file:
-            service_data = yaml.load(file, yaml.SafeLoader)
-        result = self.cliclient.create(body=service_data, namespace=namespace)
-        logger.info(result)
+        self.process(operation="create", type="body", data_type="yaml", file=file, namespace=namespace)
 
     @keyword
-    def get_services(self, namespace: Union[str, None] = None) -> List[str]:
+    def get_services(self, namespace: Optional[str] = None) -> None:
         """Get all services
 
         Args:
-            namespace (str, optional): Namespace. Defaults to ''.
-
-        Raises:
-            Error: Service not found
-
-        Returns:
-            List[str]: List with all Services
+            namespace (str, optional): Namespace. Defaults to None.
         """
-        service_list = self.cliclient.get(name=None, namespace=namespace, label_selector=None)
-        services_found = [service.metadata.name for service in service_list.items]
-        if not services_found:
-            logger.error(f'Services not found in {namespace}')
-            raise Error(
-                f'Services not found in {namespace}'
-            )
-        logger.info(services_found)
-        return services_found
+        self.process(operation="get", type="name", namespace=namespace)
 
     @keyword
-    def delete_service(self, name: str, namespace: Union[str, None] = None, **kwargs) -> None:
+    def delete_service(self, name: str, namespace: Optional[str] = None, **kwargs: str) -> None:
         """Delete Service
 
         Args:
             name (str): Service to delete
-            namespace (Union[str, None], optional): Namespace where the Service exists. Defaults to None.
+            namespace (Optional[str], optional): Namespace where the Service exists. Defaults to None.
         """
-        result = self.cliclient.delete(name=name, namespace=namespace, **kwargs)
-        logger.info(result)
+        self.process(operation="delete", type="name", name=name, namespace=namespace, **kwargs)
 
     @keyword
-    def services_should_contain(self, name: str, namespace: Union[str, None] = None) -> List[Dict[str, str]]:
+    def services_should_contain(self, name: str, namespace: Optional[str] = None) -> None:
         """
-        Get services starting with name name
+        Get services containing name
 
         Args:
-          name: starting name of the service
-          namespace: namespace
-
-        Returns:
-          output(List): Values of service names and status with List
+          name: String that must contain the name of the service
+          namespace (Optional[str], optional): Namespace where the Service exists. Defaults to None.
         """
-        service_list = self.cliclient.get(name=name, namespace=namespace, label_selector=None)
-        service_found = {service_list.metadata.name: f'{service_list.spec.clusterIPs}:{service_list.spec.ports}'}
-        if not service_found:
-            logger.error(f'Service {name} not found')
-            raise Error(
-                f'Service {name} not found'
-            )
-        logger.info(service_found)
-        return service_found
+        services = self.cli_client.get(namespace=namespace)['items']
+        result = [service for service in services if name in service['metadata']['name']]
+        if not result:
+            error_message = f"Services with name containing {name} not found"
+            self.output_streamer.stream(error_message, 'error')
+            raise ResourceNotFound(error_message)
+        output = [{service['metadata']['name']: f"{service['spec']['clusterIPs']}:{service['spec']['ports']}"}
+                  for service in result]
+        formatted_output = self.output_formatter.format(output, "Services found")
+        self.output_streamer.stream(formatted_output, "info")

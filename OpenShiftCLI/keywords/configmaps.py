@@ -1,37 +1,66 @@
-import os
+from typing import Optional
 
-import yaml
-from OpenShiftCLI.cliclient import Cliclient
 from robotlibcore import keyword
-from robot.api import logger
-from typing import Optional, Union
+
+from OpenShiftCLI.base import LibraryComponent
+from OpenShiftCLI.cliclient import CliClient
+from OpenShiftCLI.dataloader import DataLoader
+from OpenShiftCLI.dataparser import DataParser
+from OpenShiftCLI.outputformatter import OutputFormatter
+from OpenShiftCLI.outputstreamer import OutputStreamer
 
 
-class ConfigmapKeywords(object):
-    def __init__(self, cliclient: Cliclient) -> None:
-        self.cliclient = cliclient
+class ConfigmapKeywords(LibraryComponent):
+    def __init__(self,
+                 cli_client: CliClient,
+                 data_loader: DataLoader,
+                 data_parser: DataParser,
+                 output_formatter: OutputFormatter,
+                 output_streamer: OutputStreamer) -> None:
+        LibraryComponent.__init__(self, cli_client, data_loader, data_parser, output_formatter, output_streamer)
 
     @keyword
-    def create_configmap(self, filename: str, namespace: Optional[str] = None) -> None:
+    def create_configmap(self, file: str, namespace: Optional[str] = None) -> None:
         """Create Configmap
 
         Args:
-            filename (str): Path to the yaml file containing the Configmap definition
-            namespace (Optional[str]): Namespace where the Configmap will be created
+            file (str): Path to the yaml file containing the Configmap definition
+            namespace (Optional[str], optional): Namespace where the Configmap will be created. Defaults to None.
         """
-        cwd = os.getcwd()
-        with open(rf'{cwd}/{filename}') as file:
-            configmap_data = yaml.load(file, yaml.SafeLoader)
-        result = self.cliclient.create(body=configmap_data, namespace=namespace)
-        logger.info(result)
+        self.process(operation="create", type="body", data_type="yaml", file=file, namespace=namespace)
 
     @keyword
-    def delete_configmap(self, name: str, namespace: Union[str, None] = None, **kwargs: str) -> None:
+    def delete_configmap(self, name: str, namespace: Optional[str] = None, **kwargs: str) -> None:
         """Delete ConfigMap
 
         Args:
-            name (str): ConfigMap to be deleted
-            namespace (Union[str, None], optional): Namespace where the ConfigMap exists. Defaults to None.
+            name (str): ConfigMap to delete
+            namespace (Optional[str], optional): Namespace where the ConfigMap exists. Defaults to None.
         """
-        result = self.cliclient.delete(name=name, namespace=namespace, **kwargs)
-        logger.info(result)
+        self.process(operation="delete", type="name", name=name, namespace=namespace, **kwargs)
+
+    @keyword
+    def delete_configmap_from_file(self, file: str, namespace: Optional[str] = None, **kwargs: str) -> None:
+        """Delete Configmap From File
+
+        Args:
+            file (str): Path to the yaml file containing the Configmap definition
+            namespace (Optional[str], optional): Namespace where the Configmap exists. Defaults to None.
+        """
+        self.process(operation="delete", type="name", data_type="yaml", file=file, namespace=namespace, **kwargs)
+
+    @keyword
+    def patch_configmap(self,
+                        name: Optional[str] = None,
+                        body: Optional[str] = None,
+                        namespace: Optional[str] = None,
+                        **kwargs: str) -> None:
+        """Patch Configmap
+
+        Args:
+            name (Optional[str], optional): Configmap to patch. Defaults to None.
+            body (Optional[str], optional): Configmap definition file. Defaults to None.
+            namespace (Optional[str], optional): Namespace where the Configmap exists. Defaults to None.
+        """
+        self.process(operation="patch", type="patch", data_type="json",
+                     name=name, body=body, namespace=namespace, **kwargs)
