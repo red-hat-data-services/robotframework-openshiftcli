@@ -28,8 +28,15 @@ class ApiClient(CliClient):
     def get(self,
             name: Optional[str] = None,
             namespace: Optional[str] = None,
-            label_selector: Optional[str] = None) -> Dict[str, Any]:
-        return self._get_resources().get(name=name, namespace=namespace, label_selector=label_selector).to_dict()
+            label_selector: Optional[str] = None,
+            field_selector: Optional[str] = None,
+            **kwargs: str) -> Dict[str, Any]:
+        return self._get_resources().get(
+            name=name,
+            namespace=namespace,
+            label_selector=label_selector,
+            field_selector=field_selector,
+            **kwargs).to_dict()
 
     def patch(self, name: str, body: str, namespace: Optional[str] = None, **kwargs: str) -> Dict[str, Any]:
         return self._get_resources().patch(name=name, body=body, namespace=namespace, **kwargs)
