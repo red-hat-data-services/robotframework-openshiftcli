@@ -3,6 +3,7 @@ from .clusterrolebindings import ClusterrolebindingKeywords
 from .clusterroles import ClusterroleKeywords
 from .configmaps import ConfigmapKeywords
 from .crds import CRDKeywords
+from .events import EventKeywords
 from .groups import GroupKeywords
 from .kfdefs import KFDEFKeywords
 from .lists import ListKeywords
