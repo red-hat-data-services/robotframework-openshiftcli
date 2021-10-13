@@ -24,7 +24,9 @@ class CliClient(ABC):
     def get(self,
             name: Optional[str] = None,
             namespace: Optional[str] = None,
-            label_selector: Optional[str] = None) -> Dict[str, Any]:
+            label_selector: Optional[str] = None,
+            field_selector: Optional[str] = None,
+            **kwargs: str) -> Dict[str, Any]:
         pass
 
     @abstractmethod

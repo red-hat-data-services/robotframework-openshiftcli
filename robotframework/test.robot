@@ -14,7 +14,7 @@ Test Project Keywords
 
  Test Service Keywords
    New Project  test-services
-   Create Service  https://api.github.com/repos/pablofelix/robotframework-OpenShiftCLI/contents/test-data/service.yaml?ref\=/feature/templates  namespace=test-services
+   Create Service  https://api.github.com/repos/pablofelix/robotframework-OpenShiftCLI/contents/test-data/service.yaml?ref\=/master  namespace=test-services
    Create Service  test-data/services.yaml  namespace=test-services
    Get Services  namespace=test-services
    Services Should Contain  my-service  namespace=test-services
@@ -27,7 +27,7 @@ Test Secret Keywords
   New Project  test-secrets
   Create Secret  test-data/secret.yaml  namespace=test-secrets
   Create Secret  test-data/secrets.yaml  namespace=test-secrets
-  Apply Secret  https://api.github.com/repos/pablofelix/robotframework-OpenShiftCLI/contents/test-data/secret.yaml?ref\=/feature/templates  namespace=test-secrets
+  Apply Secret  https://api.github.com/repos/pablofelix/robotframework-OpenShiftCLI/contents/test-data/secret.yaml?ref\=/master  namespace=test-secrets
   Run Keyword And Expect Error  Content was not found. Verify url https://api.github.com/repos/pablofelix/robotframework-OpenShiftCLI/contents/test-data/secreto.yaml?ref\=/feature/templates is correct
   ...  Apply Secret  https://api.github.com/repos/pablofelix/robotframework-OpenShiftCLI/contents/test-data/secreto.yaml?ref\=/feature/templates  namespace=test-secrets
   Apply Secret  test-data/secret_apply.yaml  namespace=test-secrets
@@ -103,3 +103,8 @@ Test Pods Keywords
   Delete Pod  my-pod-1  namespace=test-pods
   Delete Pod  my-pod-2  namespace=test-pods
   Delete Project  test-pods
+
+Test Events Keywords
+  New Project  test-events
+  Get Events  namespace=redhat-ods-applications
+  Delete Project  test-events

@@ -7,6 +7,7 @@ from OpenShiftCLI.keywords import (
     ClusterroleKeywords,
     ConfigmapKeywords,
     CRDKeywords,
+    EventKeywords,
     GroupKeywords,
     KFDEFKeywords,
     ListKeywords,
@@ -66,6 +67,13 @@ class OpenShiftCLI(DynamicCore):
             ),
             CRDKeywords(
                 ApiClient('apiextensions.k8s.io/v1', 'CustomResourceDefinition'),
+                DataLoader(),
+                DataParser(),
+                PlaintextFormatter(),
+                LogStreamer()
+            ),
+            EventKeywords(
+                ApiClient('v1', 'Event'),
                 DataLoader(),
                 DataParser(),
                 PlaintextFormatter(),
