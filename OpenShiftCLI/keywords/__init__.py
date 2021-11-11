@@ -1,4 +1,4 @@
-
+from .generic import GenericKeywords
 from .clusterrolebindings import ClusterrolebindingKeywords
 from .clusterroles import ClusterroleKeywords
 from .configmaps import ConfigmapKeywords
@@ -14,3 +14,4 @@ from .rolebindings import RolebindingKeywords
 from .secrets import SecretKeywords
 from .services import ServiceKeywords
 from .users import UserKeywords
+
