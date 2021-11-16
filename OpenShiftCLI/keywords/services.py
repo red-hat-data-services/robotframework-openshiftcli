@@ -6,6 +6,7 @@ from OpenShiftCLI.base import LibraryComponent
 from OpenShiftCLI.cliclient import CliClient
 from OpenShiftCLI.dataloader import DataLoader
 from OpenShiftCLI.dataparser import DataParser
+from OpenShiftCLI.deprecated import deprecated
 from OpenShiftCLI.outputformatter import OutputFormatter
 from OpenShiftCLI.outputstreamer import OutputStreamer
 from OpenShiftCLI.errors import ResourceNotFound
@@ -24,6 +25,7 @@ class ServiceKeywords(LibraryComponent):
         self.output_streamer = output_streamer
 
     @keyword
+    @deprecated(new_keyword='Create')
     def create_service(self, file: str, namespace: Optional[str] = None) -> None:
         """Create Service
 
@@ -34,6 +36,7 @@ class ServiceKeywords(LibraryComponent):
         self.process(operation="create", type="body", data_type="yaml", file=file, namespace=namespace)
 
     @keyword
+    @deprecated(new_keyword='Get')
     def get_services(self, namespace: Optional[str] = None) -> None:
         """Get all services
 
@@ -43,6 +46,7 @@ class ServiceKeywords(LibraryComponent):
         self.process(operation="get", type="name", namespace=namespace)
 
     @keyword
+    @deprecated(new_keyword='Delete')
     def delete_service(self, name: str, namespace: Optional[str] = None, **kwargs: str) -> None:
         """Delete Service
 

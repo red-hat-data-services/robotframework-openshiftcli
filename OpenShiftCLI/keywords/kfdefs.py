@@ -6,6 +6,7 @@ from OpenShiftCLI.base import LibraryComponent
 from OpenShiftCLI.cliclient import CliClient
 from OpenShiftCLI.dataloader import DataLoader
 from OpenShiftCLI.dataparser import DataParser
+from OpenShiftCLI.deprecated import deprecated
 from OpenShiftCLI.outputformatter import OutputFormatter
 from OpenShiftCLI.outputstreamer import OutputStreamer
 
@@ -23,6 +24,7 @@ class KFDEFKeywords(LibraryComponent):
         self.output_streamer = output_streamer
 
     @keyword
+    @deprecated(new_keyword='Create')
     def create_kfdef(self, file: str, namespace: Optional[str] = None) -> None:
         """Create KfDef
 
@@ -33,6 +35,7 @@ class KFDEFKeywords(LibraryComponent):
         self.process(operation="create", type="body", data_type="yaml", file=file, namespace=namespace)
 
     @keyword
+    @deprecated(new_keyword='Delete')
     def delete_kfdef(self, name: str, namespace: Optional[str] = None, **kwargs: str) -> None:
         """Delete KfDef
 
@@ -43,6 +46,7 @@ class KFDEFKeywords(LibraryComponent):
         self.process(operation="delete", type="name", name=name, namespace=namespace, **kwargs)
 
     @keyword
+    @deprecated(new_keyword='Get')
     def get_kfdefs(self, namespace: Optional[str] = None, label_selector: Optional[str] = None) -> None:
         """Get KfDefs
 
@@ -53,6 +57,7 @@ class KFDEFKeywords(LibraryComponent):
         self.process(operation="get", type="name", namespace=namespace, label_selector=label_selector)
 
     @keyword
+    @deprecated(new_keyword='Path')
     def patch_kfdef(self,
                     name: Optional[str] = None,
                     body: Optional[str] = None,

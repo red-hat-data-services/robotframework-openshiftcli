@@ -6,6 +6,7 @@ from OpenShiftCLI.base import LibraryComponent
 from OpenShiftCLI.cliclient import CliClient
 from OpenShiftCLI.dataloader import DataLoader
 from OpenShiftCLI.dataparser import DataParser
+from OpenShiftCLI.deprecated import deprecated
 from OpenShiftCLI.outputformatter import OutputFormatter
 from OpenShiftCLI.outputstreamer import OutputStreamer
 from OpenShiftCLI.errors import ResourceNotFound
@@ -25,6 +26,7 @@ class ProjectKeywords(LibraryComponent):
         self.output_streamer = output_streamer
 
     @keyword
+    @deprecated(new_keyword='Delete')
     def delete_project(self, name: str, **kwargs: str) -> None:
         """Delete Project
 
@@ -34,6 +36,7 @@ class ProjectKeywords(LibraryComponent):
         self.process(operation="delete", type="name", name=name, **kwargs)
 
     @keyword
+    @deprecated(new_keyword='Get')
     def get_projects(self) -> None:
         """Get All Projects
         """

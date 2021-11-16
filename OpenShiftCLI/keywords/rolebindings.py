@@ -6,6 +6,7 @@ from OpenShiftCLI.base import LibraryComponent
 from OpenShiftCLI.cliclient import CliClient
 from OpenShiftCLI.dataloader import DataLoader
 from OpenShiftCLI.dataparser import DataParser
+from OpenShiftCLI.deprecated import deprecated
 from OpenShiftCLI.outputformatter import OutputFormatter
 from OpenShiftCLI.outputstreamer import OutputStreamer
 
@@ -20,6 +21,7 @@ class RolebindingKeywords(LibraryComponent):
         LibraryComponent.__init__(self, cli_client, data_loader, data_parser, output_formatter, output_streamer)
 
     @keyword
+    @deprecated(new_keyword='Create')
     def create_role_binding(self, file: str, namespace: Optional[str] = None) -> None:
         """Create Role Binding
 
@@ -30,6 +32,7 @@ class RolebindingKeywords(LibraryComponent):
         self.process(operation="create", type="body", data_type="yaml", file=file, namespace=namespace)
 
     @keyword
+    @deprecated(new_keyword='Delete')
     def delete_role_binding(self, name: str, namespace: Optional[str] = None, **kwargs: str) -> None:
         """Delete Role Bindig
 

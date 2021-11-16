@@ -6,6 +6,7 @@ from OpenShiftCLI.base import LibraryComponent
 from OpenShiftCLI.cliclient import CliClient
 from OpenShiftCLI.dataloader import DataLoader
 from OpenShiftCLI.dataparser import DataParser
+from OpenShiftCLI.deprecated import deprecated
 from OpenShiftCLI.outputformatter import OutputFormatter
 from OpenShiftCLI.outputstreamer import OutputStreamer
 
@@ -20,6 +21,7 @@ class SecretKeywords(LibraryComponent):
         LibraryComponent.__init__(self, cli_client, data_loader, data_parser, output_formatter, output_streamer)
 
     @keyword
+    @deprecated(new_keyword='Apply')
     def apply_secret(self, file: str, namespace: Optional[str] = None) -> None:
         """Apply Secret
 
@@ -30,6 +32,7 @@ class SecretKeywords(LibraryComponent):
         self.process(operation="apply", type="body", data_type="yaml", file=file, namespace=namespace)
 
     @keyword
+    @deprecated(new_keyword='Create')
     def create_secret(self, file: str, namespace: Optional[str] = None) -> None:
         """Create Secret
 
@@ -40,6 +43,7 @@ class SecretKeywords(LibraryComponent):
         self.process(operation="create", type="body", data_type="yaml", file=file, namespace=namespace)
 
     @keyword
+    @deprecated(new_keyword='Delete')
     def delete_secret(self, name: str, namespace: Optional[str] = None, **kwargs: str) -> None:
         """Delete Secret
 
@@ -50,6 +54,7 @@ class SecretKeywords(LibraryComponent):
         self.process(operation="delete", type="name", name=name, namespace=namespace, **kwargs)
 
     @keyword
+    @deprecated(new_keyword='Delete')
     def delete_secret_from_file(self, file: str, namespace: Optional[str] = None, **kwargs: str) -> None:
         """Delete Secret From File
 
