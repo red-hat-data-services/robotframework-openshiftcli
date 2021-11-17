@@ -36,6 +36,9 @@ class GenericApiClient(GenericClient):
                                                   field_selector=field_selector,
                                                   **kwargs).to_dict()
 
+    def get_pod_logs(self, name: str, namespace: str, **kwargs: Optional[str]) -> Any:
+        return self.dynamic_client.request('GET', f"/api/v1/namespaces/{namespace}/pods/{name}/log")
+
     def patch(self, kind: str, name: str, body: str, namespace: Optional[str] = None,
               **kwargs: str) -> Dict[str, Any]:
         return self._get_resources(kind=kind).patch(name=name, body=body, namespace=namespace,

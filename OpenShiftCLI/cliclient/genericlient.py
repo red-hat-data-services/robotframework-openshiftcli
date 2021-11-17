@@ -27,6 +27,10 @@ class GenericClient(ABC):
         pass
 
     @abstractmethod
+    def get_pod_logs(self, name: str, namespace: str, **kwargs: Optional[str]) -> Any:
+        pass
+
+    @abstractmethod
     def patch(self, kind: str, name: str, body: str, namespace: Optional[str] = None,
               **kwargs: str) -> Dict[str, Any]:
         pass
