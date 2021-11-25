@@ -10,6 +10,7 @@ from OpenShiftCLI.base import LibraryComponent
 from OpenShiftCLI.cliclient import CliClient
 from OpenShiftCLI.dataloader import DataLoader
 from OpenShiftCLI.dataparser import DataParser
+from OpenShiftCLI.deprecated import deprecated
 from OpenShiftCLI.outputformatter import OutputFormatter
 from OpenShiftCLI.outputstreamer import OutputStreamer
 
@@ -27,6 +28,7 @@ class PodKeywords(LibraryComponent):
         self.output_streamer = output_streamer
 
     @keyword
+    @deprecated(new_keyword='Create')
     def create_pod(self, file: str, namespace: Optional[str] = None) -> None:
         """Create Pod
 
@@ -37,6 +39,7 @@ class PodKeywords(LibraryComponent):
         self.process(operation="create", type="body", data_type="yaml", file=file, namespace=namespace)
 
     @keyword
+    @deprecated(new_keyword='Delete')
     def delete_pod(self, name: str, namespace: Optional[str] = None, **kwargs: str) -> None:
         """Delete Pod
 
@@ -47,6 +50,7 @@ class PodKeywords(LibraryComponent):
         self.process(operation="delete", type="name", name=name, namespace=namespace, **kwargs)
 
     @keyword
+    @deprecated(new_keyword='Get')
     def get_pods(self, namespace: Optional[str] = None, label_selector: Optional[str] = None, **kwargs: str) -> None:
         """Get Pods
 

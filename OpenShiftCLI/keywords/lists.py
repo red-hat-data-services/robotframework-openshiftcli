@@ -6,6 +6,7 @@ from OpenShiftCLI.base import LibraryComponent
 from OpenShiftCLI.cliclient import CliClient
 from OpenShiftCLI.dataloader import DataLoader
 from OpenShiftCLI.dataparser import DataParser
+from OpenShiftCLI.deprecated import deprecated
 from OpenShiftCLI.outputformatter import OutputFormatter
 from OpenShiftCLI.outputstreamer import OutputStreamer
 
@@ -20,6 +21,7 @@ class ListKeywords(LibraryComponent):
         LibraryComponent.__init__(self, cli_client, data_loader, data_parser, output_formatter, output_streamer)
 
     @keyword
+    @deprecated(new_keyword='Apply')
     def apply_resources_list(self, file: str, namespace: Optional[str] = None) -> None:
         """Apply Resources List
 
@@ -30,6 +32,7 @@ class ListKeywords(LibraryComponent):
         self.process(operation="apply", type="body", data_type="yaml", file=file, namespace=namespace)
 
     @keyword
+    @deprecated(new_keyword='Create')
     def create_resources_list(self, file: str, namespace: Optional[str] = None) -> None:
         """Create Resources List
 
@@ -40,6 +43,7 @@ class ListKeywords(LibraryComponent):
         self.process(operation="create", type="body", data_type="yaml", file=file, namespace=namespace)
 
     @keyword
+    @deprecated(new_keyword='Delete')
     def delete_resources_list(self, file: str, namespace: Optional[str] = None) -> None:
         """Delete Resources List
 
