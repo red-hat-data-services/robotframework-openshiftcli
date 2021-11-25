@@ -23,7 +23,7 @@ class GenericKeywords(object):
         self.data_parser = data_parser
         self.output_formatter = output_formatter
         self.output_streamer = output_streamer
-
+        
     @keyword
     def apply(self, kind: str, src: str = None, namespace: Optional[str] = None,
               **kwargs: Optional[str]) -> List[Dict[str, Any]]:
@@ -127,6 +127,16 @@ class GenericKeywords(object):
             self._handle_error(operation='get', error_reason="Not Found")
         self._generate_output(output=result, output_message="Get result", output_type=None)
         return result
+
+    @keyword
+    def get_pod_logs(self, name: str, namespace: str, **kwargs: Optional[str]) -> None:
+        result = None
+        try: 
+            result = self.client.get_pod_logs(name=name, namespace=namespace, **kwargs)
+        except Exception as error:
+            self._handle_error(operation='get pod logs', error_reason=error)
+        self.output_streamer.stream(type(result), 'info')
+        self._generate_output(output=result, output_message="Get Pod Logs result", output_type=None)
 
     @keyword
     def patch(self, kind: str, src: str = None, name: Optional[str] = None,
