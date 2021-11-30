@@ -7,12 +7,14 @@ Test Generic Keywords Kind Service
   New Project  test-services
   Run Keyword And Expect Error  ResourceOperationFailed: Get failed\nReason: Not Found
   ...  Get  kind=Service  namespace=test-services
-  Run Keyword And Expect Error  ResourceOperationFailed: Create failed\nReason: Src required
-  ...  Create  kind=Service  namespace=test-services
+  Run Keyword And Expect Error  ResourceOperationFailed: Create failed\nReason: Namespace is required for v1.Service 
+  ...  Create  kind=Service  src=test-data/service.yaml
+  Run Keyword And Expect Error  STARTS: ResourceOperationFailed: Create failed\nReason: 400\nReason: Bad Request
+  ...  Create  kind=Service  src=test-data/srvice.yaml  namespace=test-services
   Create  kind=Service  src=https://api.github.com/repos/pablofelix/robotframework-OpenShiftCLI/contents/test-data/service.yaml?ref\=/master  namespace=test-services
-  Run Keyword And Expect Error  ResourceOperationFailed: Create failed\nReason: Src is not a valid path, url, yaml or json
-  ...  Create  kind=Service  src=test-data/srvices.yaml  namespace=test-services
   Create  kind=Service  src=test-data/services.yaml  namespace=test-services
+  Run Keyword And Expect Error   AttributeError: 'str' object has no attribute 'get'	
+  ...  Apply  Service  test-data/service_apply_creat.yaml
   Run Keyword And Expect Error   ResourceOperationFailed: Apply failed\nReason: Namespace is required for v1.Service	
   ...  Apply  Service  test-data/service_apply_create.yaml
   Apply  Service  test-data/service_apply_create.yaml  test-services

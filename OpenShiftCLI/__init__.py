@@ -2,6 +2,7 @@ import urllib3
 
 from robotlibcore import DynamicCore
 
+
 from OpenShiftCLI.keywords import (
     GenericKeywords,
     ClusterrolebindingKeywords,
@@ -26,6 +27,7 @@ from OpenShiftCLI.dataloader import DataLoader
 from OpenShiftCLI.dataparser import DataParser
 from OpenShiftCLI.outputstreamer import LogStreamer
 from OpenShiftCLI.outputformatter import PlaintextFormatter
+from OpenShiftCLI.templateloader import TemplateLoader
 
 
 from .version import VERSION
@@ -51,7 +53,8 @@ class OpenShiftCLI(DynamicCore):
                 DataLoader(),
                 DataParser(),
                 PlaintextFormatter(),
-                LogStreamer()
+                LogStreamer(),
+                TemplateLoader()
             ),
             ClusterrolebindingKeywords(
                 ApiClient('rbac.authorization.k8s.io/v1', 'ClusterRoleBinding'),

@@ -3,6 +3,16 @@ Documentation     OpenShiftCLI Library
 Library      OpenShiftCLI
 
 *** Test Cases ***
+Test Generic Keywords Kind Project
+  New Project  test-projects
+  Get  kind=Project
+  Get  kind=Project  field_selector=metadata.name==test-projects
+  Get  kind=Project  field_selector=metadata.name==rhods-notebooks
+  Run Keyword And Expect Error  ResourceOperationFailed: Get failed\nReason: Not Found
+  ...  Get  kind=Project  name=test-projects
+  Get  kind=Project  namespace=test-projects
+  Delete  kind=Project  name=test-projects
+
 Test Generic Keywords Kind Deployment
    New Project  test-deployments
    Create   kind=Deployment  src=test-data/deployment.yaml  namespace=test-deployments
@@ -18,10 +28,12 @@ Test Generic Keywords Kind Deployment
 
 Test Generic Keywords Kind List
   New Project  test-lists
-  Run Keyword And Expect Error  ResourceOperationFailed: Create failed\nReason: Src is not a valid path, url, yaml or json
+  Run Keyword And Expect Error  ResourceOperationFailed: Create failed\nReason: string indices must be integers    
   ...  Create  kind=List  src=test-data/lis.yaml  namespace=test-lists
+  Create  kind=List  src=test-data/list.yaml  namespace=test-lists
   Apply   kind=List  src=test-data/list_apply.yaml  namespace=test-lists
   Delete  kind=List  src=test-data/list_apply.yaml  namespace=test-lists
+  Delete  kind=List  src=test-data/list.yaml  namespace=test-lists
   Delete Project  test-lists
 
 Test Generic Keywords Kind Secret
@@ -100,6 +112,5 @@ Test Generic Keywords Kind Event
   Get  kind=Event  namespace=redhat-ods-applications
   Delete Project  test-events
 
-# Test Generic Keywords NetworkPolicy
 
 
