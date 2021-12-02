@@ -28,7 +28,7 @@ class GenericKeywords(object):
         self.template_loader = template_loader
 
     @keyword
-    def apply(self, kind: str, src: str, namespace: Optional[str] = None,
+    def oc_apply(self, kind: str, src: str, namespace: Optional[str] = None,
               **kwargs: Optional[str]) -> List[Dict[str, Any]]:
         """Applies Resource/s definition/s on one or more Resources
 
@@ -44,7 +44,7 @@ class GenericKeywords(object):
         return self._apply_or_create(kind, 'apply', src, namespace=namespace, **kwargs)
 
     @keyword
-    def create(self, kind: str, src: str, namespace: Optional[str] = None,
+    def oc_create(self, kind: str, src: str, namespace: Optional[str] = None,
                **kwargs: Optional[str]) -> List[Dict[str, Any]]:
         """Creates one or multiple Resources
 
@@ -59,7 +59,7 @@ class GenericKeywords(object):
         return self._apply_or_create(kind, 'create', src, namespace=namespace, **kwargs)
 
     @keyword
-    def delete(self, kind: str, src: Optional[str] = None, name: Optional[str] = None,
+    def oc_delete(self, kind: str, src: Optional[str] = None, name: Optional[str] = None,
                namespace: Optional[str] = None, label_selector: Optional[str] = None,
                field_selector: Optional[str] = None, **kwargs: str) -> List[Dict[str, Any]]:
         """Deletes one or more Resources
@@ -109,7 +109,7 @@ class GenericKeywords(object):
         return result
 
     @keyword
-    def get(self, kind: str, name: Optional[str] = None, namespace: Optional[str] = None,
+    def oc_get(self, kind: str, name: Optional[str] = None, namespace: Optional[str] = None,
             label_selector: Optional[str] = None, field_selector: Optional[str] = None,
             **kwargs: str) -> List[Dict[str, Any]]:
         """Gets Resource/s
@@ -134,7 +134,7 @@ class GenericKeywords(object):
         return result
     
     @keyword
-    def get_pod_logs(self, name: str, namespace: str, **kwargs: Optional[str]) -> str:
+    def oc_get_pod_logs(self, name: str, namespace: str, **kwargs: Optional[str]) -> str:
         result = None
         operation = 'get pod logs'
         try: 
@@ -145,7 +145,7 @@ class GenericKeywords(object):
         return result
     
     @keyword
-    def patch(self, kind: str, src: str, name: str, namespace: Optional[str] = None,
+    def oc_patch(self, kind: str, src: str, name: str, namespace: Optional[str] = None,
               **kwargs: str) -> Dict[str, Any]:
         """Updates Fields of the Resource using JSON merge patch
 
@@ -171,7 +171,7 @@ class GenericKeywords(object):
         return result
 
     @keyword
-    def watch(self, kind: str, namespace: Optional[str] = None, name: Optional[str] = None,
+    def oc_watch(self, kind: str, namespace: Optional[str] = None, name: Optional[str] = None,
               label_selector: Optional[str] = None, field_selector: Optional[str] = None,
               resource_version: Optional[str] = None,
               timeout: Optional[int] = 60) -> List[Dict[str, Any]]:
