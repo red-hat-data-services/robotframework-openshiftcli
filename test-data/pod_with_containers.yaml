@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-pod
+  labels:
+    role: myrole
+spec:
+  containers:
+    - name: web
+      image: bitnami/nginx:latest
+      ports:
+        - name: web
+          containerPort: 80
+          protocol: TCP
+    - name: second-web
+      image: bitnami/nginx:latest
+      ports:
+        - name: second-web
+          containerPort: 8080
+          protocol: TCP
+
