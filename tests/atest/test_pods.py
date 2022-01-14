@@ -1,4 +1,4 @@
-from OpenShiftCLI import PodKeywords
+from openshiftcli import PodKeywords
 
 
 def test_get_pods():

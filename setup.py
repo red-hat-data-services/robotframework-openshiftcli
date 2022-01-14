@@ -23,13 +23,13 @@ Openshift Cluster and perform various operations.
 """[1:-1]
 
 setup(
-    name='robotframework-OpenShiftCLI',
+    name='robotframework-openshiftcli',
     version='1.0.1',
     description="Robotframework for OpenShift interactions via CLI",
     long_description=DESCRIPTION,
     author='Vasu Kulkarni',
     author_email='vasu@redhat.com',
-    url='https://github.com/red-hat-data-services/robotframework-OpenShiftCLI',
+    url='https://github.com/red-hat-data-services/robotframework-openshiftcli',
     license='Apache License 2.0',
     keywords='robotframework openshift cli',
     platforms='any',

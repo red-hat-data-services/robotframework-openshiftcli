@@ -21,7 +21,7 @@ apidoc/*
 _build/*
 bugzilla.cfg
 .venv
-robotframework_OpenShiftCLI.egg-info/
+robotframework_openshiftcli.egg-info/
 .tox/
 robotframework/output/*
 installation/*
