@@ -4,7 +4,7 @@ from kubernetes import config
 from openshift.dynamic import DynamicClient
 
 from openshiftcli.cliclient import GenericClient
-
+from urllib import parse
 
 class GenericApiClient(GenericClient):
 
@@ -37,7 +37,9 @@ class GenericApiClient(GenericClient):
                                                   **kwargs).to_dict()
 
     def get_pod_logs(self, name: str, namespace: str, **kwargs: Optional[str]) -> Any:
-        return self.dynamic_client.request('GET', f"/api/v1/namespaces/{namespace}/pods/{name}/log")
+        query = parse.urlencode(kwargs)
+        url = f"/api/v1/namespaces/{namespace}/pods/{name}/log?{query}"
+        return self.dynamic_client.request('GET', url)
 
     def patch(self, kind: str, name: str, body: str, namespace: Optional[str] = None,
               **kwargs: str) -> Dict[str, Any]:
